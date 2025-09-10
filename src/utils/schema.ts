@@ -23,11 +23,24 @@ export function propsToJsonSchema(props: ComponentMeta['props']): JsonSchema {
 
     // Convert Vue prop type to JSON Schema type
     const propType = convertVueTypeToJsonSchema(prop.type, prop.schema as any)
+    // Ignore if the prop type is undefined
+    if (!propType) {
+      continue
+    }
+
     Object.assign(propSchema, propType)
 
     // Add default value if available and not already present, only for primitive types or for object with '{}'
     if (prop.default !== undefined && propSchema.default === undefined) {
       propSchema.default = parseDefaultValue(prop.default)
+    }
+    
+    // Also check for default values in tags
+    if (propSchema.default === undefined && prop.tags) {
+      const defaultValueTag = prop.tags.find(tag => tag.name === 'defaultValue')
+      if (defaultValueTag) {
+        propSchema.default = parseDefaultValue((defaultValueTag as unknown as { text: string }).text)
+      }
     }
 
     // Add the property to the schema
@@ -48,6 +61,24 @@ export function propsToJsonSchema(props: ComponentMeta['props']): JsonSchema {
 }
 
 function convertVueTypeToJsonSchema(vueType: string, vueSchema: PropertyMetaSchema): any {
+  // Skip function/event props as they're not useful in JSON Schema
+  if (isFunctionProp(vueType, vueSchema)) {
+    return undefined
+  }
+  
+  // Check for intersection types first (but only for simple cases, not union types)
+  if (!vueType.includes('|') && vueType.includes(' & ')) {
+    const intersectionSchema = convertIntersectionType(vueType)
+    if (intersectionSchema) {
+      return intersectionSchema
+    }
+  }
+  
+  // Check if this is an enum type
+  if (isEnumType(vueType, vueSchema)) {
+    return convertEnumToJsonSchema(vueType, vueSchema)
+  }
+  
   // Unwrap enums for optionals/unions
   const { type: unwrappedType, schema: unwrappedSchema, enumValues } = unwrapEnumSchema(vueType, vueSchema)
   if (enumValues && unwrappedType === 'boolean') {
@@ -172,6 +203,12 @@ function convertNestedSchemaToJsonSchemaProperties(nestedSchema: any): Record<st
     } else if (typeof prop === 'string') {
       type = prop
     }
+    const converted = convertVueTypeToJsonSchema(type, schema)
+    // Ignore if the converted type is undefined
+    if (!converted) {
+      continue
+    }
+
     properties[key] = convertVueTypeToJsonSchema(type, schema)
     // Only add description if non-empty
     if (description) {
@@ -218,8 +255,9 @@ function convertSimpleType(type: string): any {
 
 function parseDefaultValue(defaultValue: string): any {
   try {
-    // Remove quotes if it's a string literal
-    if (defaultValue.startsWith('"') && defaultValue.endsWith('"')) {
+    // Remove quotes if it's a string literal (both single and double quotes)
+    if ((defaultValue.startsWith('"') && defaultValue.endsWith('"')) ||
+        (defaultValue.startsWith("'") && defaultValue.endsWith("'"))) {
       return defaultValue.slice(1, -1)
     }
 
@@ -305,4 +343,236 @@ function unwrapEnumSchema(vueType: string, vueSchema: PropertyMetaSchema): { typ
   }
 
   return { type: vueType, schema: vueSchema }
+}
+
+/**
+ * Check if a type is an enum (union of string literals or boolean values)
+ */
+function isEnumType(vueType: string, vueSchema: PropertyMetaSchema): boolean {
+  // Check if it's a union type with string literals or boolean values
+  if (typeof vueSchema === 'object' && vueSchema?.kind === 'enum') {
+    const schema = vueSchema.schema
+    if (schema && typeof schema === 'object') {
+      const values = Object.values(schema)
+      // Check if all non-undefined values are string literals
+      const stringLiterals = values.filter(v => 
+        v !== 'undefined' && 
+        typeof v === 'string' && 
+        v.startsWith('"') && 
+        v.endsWith('"')
+      )
+      // Check if all non-undefined values are boolean literals
+      const booleanLiterals = values.filter(v => 
+        v !== 'undefined' && 
+        (v === 'true' || v === 'false')
+      )
+      return stringLiterals.length > 0 || booleanLiterals.length > 0
+    }
+  }
+  
+  // Check if the type string contains string literals
+  if (vueType.includes('"') && vueType.includes('|')) {
+    return true
+  }
+  
+  return false
+}
+
+/**
+ * Convert enum type to JSON Schema
+ */
+function convertEnumToJsonSchema(vueType: string, vueSchema: PropertyMetaSchema): any {
+  if (typeof vueSchema === 'object' && vueSchema?.kind === 'enum') {
+    const schema = vueSchema.schema
+    if (schema && typeof schema === 'object') {
+      const enumValues: any[] = []
+      const types = new Set<string>()
+      
+      // Extract enum values and types
+      Object.values(schema).forEach(value => {
+        if (value === 'undefined') {
+          // Handle optional types
+          return
+        }
+        
+        if (typeof value === 'string') {
+          if (value === 'true' || value === 'false') {
+            enumValues.push(value === 'true')
+            types.add('boolean')
+          } else if (value.startsWith('"') && value.endsWith('"')) {
+            enumValues.push(value.slice(1, -1)) // Remove quotes
+            types.add('string')
+          } else if (value === 'string') {
+            types.add('string')
+          } else if (value === 'number') {
+            types.add('number')
+          } else if (value === 'boolean') {
+            types.add('boolean')
+          }
+        } else if (typeof value === 'object' && value !== null) {
+          // Complex type like (string & {}) - convert to allOf schema
+          if (value.type) {
+            const convertedType = convertIntersectionType(value.type)
+            if (convertedType) {
+              // For intersection types in enums, we need to handle them differently
+              // We'll add a special marker to indicate this is an intersection type
+              types.add('__intersection__')
+            } else {
+              types.add(value.type)
+            }
+          }
+        }
+      })
+      
+      // If we have enum values, create an enum schema
+      if (enumValues.length > 0) {
+        const result: any = { enum: enumValues }
+        
+        // Check if we have intersection types
+        if (types.has('__intersection__')) {
+          // For enums with intersection types, we need to create a more complex schema
+          // Find the intersection type in the original schema
+          const intersectionType = Object.values(schema).find(v => 
+            typeof v === 'object' && v?.type && v.type.includes(' & ')
+          )
+          
+          if (intersectionType) {
+            const convertedIntersection = convertIntersectionType((intersectionType as unknown as { type: string }).type)
+            if (convertedIntersection) {
+              // Create an anyOf schema that combines the enum with the intersection type
+              return {
+                anyOf: [
+                  { enum: enumValues },
+                  convertedIntersection
+                ]
+              }
+            }
+          }
+        }
+        
+        // Add type if it's consistent
+        if (types.size === 1) {
+          result.type = Array.from(types)[0]
+        } else if (types.size > 1) {
+          result.type = Array.from(types)
+        }
+        
+        // Special case: if it's a boolean enum with just true/false, treat as regular boolean
+        if (types.size === 1 && types.has('boolean') && enumValues.length === 2 && 
+            enumValues.includes(true) && enumValues.includes(false)) {
+          return { type: 'boolean' }
+        }
+        
+        return result
+      }
+      
+      // If no enum values but we have types, create a union type
+      if (types.size > 1) {
+        return { type: Array.from(types) }
+      } else if (types.size === 1) {
+        return { type: Array.from(types)[0] }
+      }
+    }
+  }
+  
+  // Fallback: try to extract from type string
+  if (vueType.includes('"') && vueType.includes('|')) {
+    const enumValues: string[] = []
+    const parts = vueType.split('|').map(p => p.trim())
+    
+    parts.forEach(part => {
+      if (part.startsWith('"') && part.endsWith('"')) {
+        enumValues.push(part.slice(1, -1))
+      } else if (part === 'undefined') {
+        // Skip undefined
+      }
+    })
+    
+    if (enumValues.length > 0) {
+      return { type: 'string', enum: enumValues }
+    }
+  }
+  
+  // Final fallback
+  return { type: 'string' }
+}
+
+/**
+ * Check if a prop is a function/event prop that should be excluded from JSON Schema
+ */
+function isFunctionProp(type: string, schema: any): boolean {
+  // Check if the type contains function signatures
+  if (type && typeof type === 'string') {
+    // Look for function patterns like (event: MouseEvent) => void
+    if (type.includes('=>') || type.includes('(event:') || type.includes('void')) {
+      return true
+    }
+  }
+
+  // Check if the schema contains event handlers
+  if (schema && typeof schema === 'object') {
+    // Check for event kind in enum schemas
+    if (schema.kind === 'enum' && schema.schema) {
+      const values = Object.values(schema.schema) as Record<string, unknown>[]
+      for (const value of values) {
+        if (typeof value === 'object' && value?.kind === 'event') {
+          return true
+        }
+        // Check nested arrays for event handlers
+        if (typeof value === 'object' && value?.kind === 'array' && value.schema) {
+          for (const item of value.schema as Record<string, unknown>[]) {
+            if (typeof item === 'object' && item?.kind === 'event') {
+              return true
+            }
+          }
+        }
+      }
+    }
+  }
+
+  return false
+}
+
+/**
+ * Convert TypeScript intersection types to JSON Schema allOf
+ */
+function convertIntersectionType(typeString: string): any | null {
+  // Handle string & {} pattern
+  if (typeString === 'string & {}') {
+    return {
+      allOf: [
+        { type: 'string' },
+        { type: 'object', additionalProperties: false }
+      ]
+    }
+  }
+  
+  // Handle other intersection patterns
+  if (typeString.includes(' & ')) {
+    const parts = typeString.split(' & ').map(p => p.trim())
+    const allOfSchemas = parts.map(part => {
+      if (part === 'string') {
+        return { type: 'string' }
+      } else if (part === 'number') {
+        return { type: 'number' }
+      } else if (part === 'boolean') {
+        return { type: 'boolean' }
+      } else if (part === 'object') {
+        return { type: 'object' }
+      } else if (part === '{}') {
+        return { type: 'object', additionalProperties: false }
+      } else if (part === 'null') {
+        return { type: 'null' }
+      } else {
+        // For other types, return as-is
+        return { type: part }
+      }
+    })
+    
+    return {
+      allOf: allOfSchemas
+    }
+  }
+  
+  return null
 }

@@ -233,7 +233,9 @@ export function useComponentMetaParser (
     get checker () { return checker },
     get components () { return components },
     dispose() {
-      checker.clearCache()
+      if (checker) {
+        checker.clearCache()
+      }
       // @ts-expect-error - Remove checker
       checker = null
       // Clear components cache

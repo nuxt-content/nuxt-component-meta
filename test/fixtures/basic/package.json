@@ -2,7 +2,7 @@
   "private": true,
   "name": "nuxt-component-meta-tests",
   "devDependencies": {
-    "nuxt": "^4.0.1",
+    "nuxt": "^4.1.1",
     "nuxt-component-meta": "*"
   },
   "scripts": {

@@ -5,6 +5,7 @@ import { isAbsolute, join } from "pathe"
 import { existsSync, readFileSync, writeFileSync, mkdirSync } from 'fs'
 import { withBase } from "ufo"
 import { hash } from "crypto"
+import { defu } from 'defu'
 
 export interface Options {
   rootDir: string
@@ -66,7 +67,18 @@ function _getComponentMeta(fullPath: string, opts: Options) {
       exclude: []
     },
   )
-  return refineMeta(
+
+  const baseMeta = refineMeta(
     checker.getComponentMeta(fullPath)
   )
+
+  // Apply extendComponentMeta(...) overrides from the component source
+  try {
+    const code = readFileSync(fullPath, 'utf-8')
+    const extendComponentMetaMatch = code.match(/extendComponentMeta\((\{[\s\S]*?\})\)/)
+    const extendedComponentMeta = extendComponentMetaMatch?.length ? eval(`(${extendComponentMetaMatch[1]})`) : null
+    return defu(baseMeta, extendedComponentMeta) as ComponentMeta
+  } catch {
+    return baseMeta
+  }
 }

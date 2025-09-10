@@ -38,4 +38,57 @@ describe("get-component-meta", () => {
     expect(meta.props.length).toEqual(4);
     expect((meta as unknown as Record<string, unknown>).cachedAt).toBeDefined();
   });
+
+  test("parse ExtendMetaComponent with extendComponentMeta", { timeout: 10000 }, () => {
+    const meta = getComponentMeta("components/ExtendMetaComponent.vue", {
+      rootDir,
+    })
+
+    // Check basic component metadata from defineProps/defineEmits
+    expect(meta.props.length).toEqual(2); // title, enabled
+    expect(meta.props.find(p => p.name === 'title')).toBeDefined();
+    expect(meta.props.find(p => p.name === 'enabled')).toBeDefined();
+    expect(meta.events.length).toEqual(1);
+    expect(meta.events[0].name).toEqual('updated');
+
+    // Check that extendComponentMeta adds custom metadata fields
+    const extendedMeta = meta as unknown as Record<string, unknown>;
+    expect(extendedMeta.description).toEqual('A component that demonstrates extendComponentMeta functionality');
+    expect(extendedMeta.version).toEqual('1.0.0');
+    expect(extendedMeta.tags).toEqual(['test', 'meta']);
+    expect(extendedMeta.customData).toEqual({
+      for: 'Test Suite',
+      category: 'utility'
+    });
+  });
+
+  test("parse ExtendMetaComponent with extendComponentMeta (cached)", { timeout: 10000 }, () => {
+    const meta = getComponentMeta("components/ExtendMetaComponent.vue", {
+      rootDir,
+      cache: true
+    })
+
+    // Check that extendComponentMeta custom fields persist through caching
+    const extendedMeta = meta as unknown as Record<string, unknown>;
+    expect(extendedMeta.description).toEqual('A component that demonstrates extendComponentMeta functionality');
+    expect(extendedMeta.version).toEqual('1.0.0');
+    expect(extendedMeta.tags).toEqual(['test', 'meta']);
+    expect(extendedMeta.customData).toEqual({
+      for: 'Test Suite',
+      category: 'utility'
+    });
+    expect(extendedMeta.cachedAt).toBeUndefined();
+  });
+
+  test("parse ExtendMetaComponent cached retrieval", { timeout: 10000 }, () => {
+    const meta = getComponentMeta("components/ExtendMetaComponent.vue", {
+      rootDir,
+      cache: true
+    })
+
+    // Check that extendComponentMeta custom fields are preserved in cached version
+    const extendedMeta = meta as unknown as Record<string, unknown>;
+    expect(extendedMeta.description).toEqual('A component that demonstrates extendComponentMeta functionality');
+    expect(extendedMeta.cachedAt).toBeDefined();
+  });
 });

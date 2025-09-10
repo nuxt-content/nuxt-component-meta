@@ -127,7 +127,7 @@ This module uses [pkg.pr.new](https://pkg.pr.new) for continuous releases. Each 
 You can install a specific commit using its unique URL:
 
 ```bash
-npm i https://pkg.pr.new/nuxtlabs/nuxt-component-meta@<commit-hash>
+npm i https://pkg.pr.new/nuxt-content/nuxt-component-meta@<commit-hash>
 ```
 
 <!-- Badges -->
@@ -145,6 +145,6 @@ npm i https://pkg.pr.new/nuxtlabs/nuxt-component-meta@<commit-hash>
 
 ## License
 
-[MIT License](https://github.com/nuxtlabs/nuxt-component-meta/blob/main/LICENSE)
+[MIT License](https://github.com/nuxt-content/nuxt-component-meta/blob/main/LICENSE)
 
 Copyright (c) NuxtLabs

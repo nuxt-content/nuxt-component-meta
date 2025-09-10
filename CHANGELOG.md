@@ -39,21 +39,21 @@ All notable changes to this project will be documented in this file. See [standa
 
 ### [0.2.3](https://github.com/farnabaz/nuxt-component-meta/compare/v0.2.2...v0.2.3) (2022-09-20)
 
-### [0.2.2](https://github.com/nuxtlabs/nuxt-component-meta/compare/v0.2.1...v0.2.2) (2022-08-31)
+### [0.2.2](https://github.com/nuxt-content/nuxt-component-meta/compare/v0.2.1...v0.2.2) (2022-08-31)
 
 
 ### Bug Fixes
 
-* add tsconfig path to `vue-component-meta` ([#40](https://github.com/nuxtlabs/nuxt-component-meta/issues/40)) ([a32212b](https://github.com/nuxtlabs/nuxt-component-meta/commit/a32212b141c265070e95a660312222f369c128de))
+* add tsconfig path to `vue-component-meta` ([#40](https://github.com/nuxt-content/nuxt-component-meta/issues/40)) ([a32212b](https://github.com/nuxt-content/nuxt-component-meta/commit/a32212b141c265070e95a660312222f369c128de))
 
-### [0.2.1](https://github.com/nuxtlabs/nuxt-component-meta/compare/v0.2.0...v0.2.1) (2022-08-29)
+### [0.2.1](https://github.com/nuxt-content/nuxt-component-meta/compare/v0.2.0...v0.2.1) (2022-08-29)
 
 
 ### Bug Fixes
 
-* node modules components ([#38](https://github.com/nuxtlabs/nuxt-component-meta/issues/38)) ([d984090](https://github.com/nuxtlabs/nuxt-component-meta/commit/d9840902781be0697657c4b752697b5b45605a08))
+* node modules components ([#38](https://github.com/nuxt-content/nuxt-component-meta/issues/38)) ([d984090](https://github.com/nuxt-content/nuxt-component-meta/commit/d9840902781be0697657c4b752697b5b45605a08))
 
-## [0.2.0](https://github.com/nuxtlabs/nuxt-component-meta/compare/v0.1.9...v0.2.0) (2022-08-29)
+## [0.2.0](https://github.com/nuxt-content/nuxt-component-meta/compare/v0.1.9...v0.2.0) (2022-08-29)
 
 
 ### ⚠ BREAKING CHANGES
@@ -62,73 +62,73 @@ All notable changes to this project will be documented in this file. See [standa
 
 ### Features
 
-* use vue-component-meta ([#34](https://github.com/nuxtlabs/nuxt-component-meta/issues/34)) ([f17413d](https://github.com/nuxtlabs/nuxt-component-meta/commit/f17413db27dd008524e57c201bb0cefba129a96e))
+* use vue-component-meta ([#34](https://github.com/nuxt-content/nuxt-component-meta/issues/34)) ([f17413d](https://github.com/nuxt-content/nuxt-component-meta/commit/f17413db27dd008524e57c201bb0cefba129a96e))
 
 
 ### Bug Fixes
 
-* skip parsing non-sfcs ([#36](https://github.com/nuxtlabs/nuxt-component-meta/issues/36)) ([6f4f4cd](https://github.com/nuxtlabs/nuxt-component-meta/commit/6f4f4cd9c9a11d040fd47247bc6f36a2b0987c27))
+* skip parsing non-sfcs ([#36](https://github.com/nuxt-content/nuxt-component-meta/issues/36)) ([6f4f4cd](https://github.com/nuxt-content/nuxt-component-meta/commit/6f4f4cd9c9a11d040fd47247bc6f36a2b0987c27))
 
-### [0.1.9](https://github.com/nuxtlabs/nuxt-component-meta/compare/v0.1.8...v0.1.9) (2022-07-21)
+### [0.1.9](https://github.com/nuxt-content/nuxt-component-meta/compare/v0.1.8...v0.1.9) (2022-07-21)
 
 
 ### Features
 
-* add parsed hook ([#29](https://github.com/nuxtlabs/nuxt-component-meta/issues/29)) ([8ce51dd](https://github.com/nuxtlabs/nuxt-component-meta/commit/8ce51dd46bb147491dbc13f2bddcdadfcb582aa8))
-* detect `$slots.*` usage in script ([#31](https://github.com/nuxtlabs/nuxt-component-meta/issues/31)) ([83ae454](https://github.com/nuxtlabs/nuxt-component-meta/commit/83ae454c64b48c158762829a1c45fe886e905da5))
-* parse normal scripts with `defineComponent` ([#28](https://github.com/nuxtlabs/nuxt-component-meta/issues/28)) ([8fca9e4](https://github.com/nuxtlabs/nuxt-component-meta/commit/8fca9e4b78551bbcd56fd5e1f8703d823c6b4f8c))
+* add parsed hook ([#29](https://github.com/nuxt-content/nuxt-component-meta/issues/29)) ([8ce51dd](https://github.com/nuxt-content/nuxt-component-meta/commit/8ce51dd46bb147491dbc13f2bddcdadfcb582aa8))
+* detect `$slots.*` usage in script ([#31](https://github.com/nuxt-content/nuxt-component-meta/issues/31)) ([83ae454](https://github.com/nuxt-content/nuxt-component-meta/commit/83ae454c64b48c158762829a1c45fe886e905da5))
+* parse normal scripts with `defineComponent` ([#28](https://github.com/nuxt-content/nuxt-component-meta/issues/28)) ([8fca9e4](https://github.com/nuxt-content/nuxt-component-meta/commit/8fca9e4b78551bbcd56fd5e1f8703d823c6b4f8c))
 
 
 ### Bug Fixes
 
-* handle complex slot ([8a41b01](https://github.com/nuxtlabs/nuxt-component-meta/commit/8a41b01f48393d4a414c0bbe8a2e8698b63504e7))
+* handle complex slot ([8a41b01](https://github.com/nuxt-content/nuxt-component-meta/commit/8a41b01f48393d4a414c0bbe8a2e8698b63504e7))
 
-### [0.1.8](https://github.com/nuxtlabs/nuxt-component-meta/compare/v0.1.7...v0.1.8) (2022-07-20)
+### [0.1.8](https://github.com/nuxt-content/nuxt-component-meta/compare/v0.1.7...v0.1.8) (2022-07-20)
 
 
 ### Features
 
-* detect ts as expression and Vue's PropType ([4d2388d](https://github.com/nuxtlabs/nuxt-component-meta/commit/4d2388d680b43c378f4d7f40d37fd5e29455d06d))
+* detect ts as expression and Vue's PropType ([4d2388d](https://github.com/nuxt-content/nuxt-component-meta/commit/4d2388d680b43c378f4d7f40d37fd5e29455d06d))
 
 
 ### Bug Fixes
 
-* check for object properties ([0f20817](https://github.com/nuxtlabs/nuxt-component-meta/commit/0f208173a665b1de758d3486c9791a3c811e350e))
+* check for object properties ([0f20817](https://github.com/nuxt-content/nuxt-component-meta/commit/0f208173a665b1de758d3486c9791a3c811e350e))
 
-### [0.1.7](https://github.com/nuxtlabs/nuxt-component-meta/compare/v0.1.6...v0.1.7) (2022-07-19)
+### [0.1.7](https://github.com/nuxt-content/nuxt-component-meta/compare/v0.1.6...v0.1.7) (2022-07-19)
 
 
 ### Bug Fixes
 
-* prevent `undefined` error ([5a403f4](https://github.com/nuxtlabs/nuxt-component-meta/commit/5a403f415f24c450a276e34b98f32040cf54719d))
+* prevent `undefined` error ([5a403f4](https://github.com/nuxt-content/nuxt-component-meta/commit/5a403f415f24c450a276e34b98f32040cf54719d))
 
-### [0.1.6](https://github.com/nuxtlabs/nuxt-component-meta/compare/v0.1.5...v0.1.6) (2022-07-19)
+### [0.1.6](https://github.com/nuxt-content/nuxt-component-meta/compare/v0.1.5...v0.1.6) (2022-07-19)
 
 
 ### Features
 
-* add flag for global components ([#27](https://github.com/nuxtlabs/nuxt-component-meta/issues/27)) ([6e70ad3](https://github.com/nuxtlabs/nuxt-component-meta/commit/6e70ad3bde35d5d04cbe8eaaf5cdff39b0186cf7))
-* basic support for typescript defineProps ([#25](https://github.com/nuxtlabs/nuxt-component-meta/issues/25)) ([60cfbaf](https://github.com/nuxtlabs/nuxt-component-meta/commit/60cfbaf86f339e00fda6e7474b75a99fe44c1943))
-* detect `$slots` usages in template ([#26](https://github.com/nuxtlabs/nuxt-component-meta/issues/26)) ([ec35351](https://github.com/nuxtlabs/nuxt-component-meta/commit/ec3535156e2297c92d45c9b31b8315f76734f5a1))
-* extract props info from `defineProps` ([#21](https://github.com/nuxtlabs/nuxt-component-meta/issues/21)) ([8f89275](https://github.com/nuxtlabs/nuxt-component-meta/commit/8f8927581e9067e8ac49782931065012634668bb))
+* add flag for global components ([#27](https://github.com/nuxt-content/nuxt-component-meta/issues/27)) ([6e70ad3](https://github.com/nuxt-content/nuxt-component-meta/commit/6e70ad3bde35d5d04cbe8eaaf5cdff39b0186cf7))
+* basic support for typescript defineProps ([#25](https://github.com/nuxt-content/nuxt-component-meta/issues/25)) ([60cfbaf](https://github.com/nuxt-content/nuxt-component-meta/commit/60cfbaf86f339e00fda6e7474b75a99fe44c1943))
+* detect `$slots` usages in template ([#26](https://github.com/nuxt-content/nuxt-component-meta/issues/26)) ([ec35351](https://github.com/nuxt-content/nuxt-component-meta/commit/ec3535156e2297c92d45c9b31b8315f76734f5a1))
+* extract props info from `defineProps` ([#21](https://github.com/nuxt-content/nuxt-component-meta/issues/21)) ([8f89275](https://github.com/nuxt-content/nuxt-component-meta/commit/8f8927581e9067e8ac49782931065012634668bb))
 
-### [0.1.5](https://github.com/nuxtlabs/nuxt-component-meta/compare/v0.1.2...v0.1.5) (2022-05-11)
+### [0.1.5](https://github.com/nuxt-content/nuxt-component-meta/compare/v0.1.2...v0.1.5) (2022-05-11)
 
 
 ### Bug Fixes
 
-* **api:** fix single component query ([5f967c5](https://github.com/nuxtlabs/nuxt-component-meta/commit/5f967c5a4fc0a36b14b72ed37158e57ddc262770))
-* **lint:** fix linting ([237b16f](https://github.com/nuxtlabs/nuxt-component-meta/commit/237b16fd181528276818e7b1654ad6b3d7f57656))
-* use addServerHandler and correct method ([3d247cc](https://github.com/nuxtlabs/nuxt-component-meta/commit/3d247cc7983b951c463ceae15fa5819225241ef1))
+* **api:** fix single component query ([5f967c5](https://github.com/nuxt-content/nuxt-component-meta/commit/5f967c5a4fc0a36b14b72ed37158e57ddc262770))
+* **lint:** fix linting ([237b16f](https://github.com/nuxt-content/nuxt-component-meta/commit/237b16fd181528276818e7b1654ad6b3d7f57656))
+* use addServerHandler and correct method ([3d247cc](https://github.com/nuxt-content/nuxt-component-meta/commit/3d247cc7983b951c463ceae15fa5819225241ef1))
 
 ### [0.1.2](https://github.com/farnabaz/nuxt-component-meta/compare/v0.1.0...v0.1.2) (2022-04-19)
 
-## [0.1.0](https://github.com/nuxtlabs/nuxt-component-meta/compare/v0.0.7...v0.1.0) (2022-04-15)
+## [0.1.0](https://github.com/nuxt-content/nuxt-component-meta/compare/v0.0.7...v0.1.0) (2022-04-15)
 
 
 ### Features
 
-* support Vue3 ([#17](https://github.com/nuxtlabs/nuxt-component-meta/issues/17)) ([f52cf6d](https://github.com/nuxtlabs/nuxt-component-meta/commit/f52cf6de9afd5d6916b7d1803ebd5c438d0084e9))
+* support Vue3 ([#17](https://github.com/nuxt-content/nuxt-component-meta/issues/17)) ([f52cf6d](https://github.com/nuxt-content/nuxt-component-meta/commit/f52cf6de9afd5d6916b7d1803ebd5c438d0084e9))
 
 ### [0.0.7](https://github.com/farnabaz/nuxt-component-meta/compare/v0.0.6...v0.0.7) (2021-11-22)
 

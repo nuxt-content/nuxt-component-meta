@@ -57,16 +57,37 @@ export function getComponentMeta(component: string, options?: Options): Componen
  * @returns component meta
  */
 function _getComponentMeta(fullPath: string, opts: Options) {
+  // Check if the component is in node_modules and adjust configuration accordingly
+  const isNodeModule = fullPath.includes('node_modules')
+  
+  // For node_modules components, try to find the TypeScript declaration file first
+  let resolvedPath = fullPath
+  if (isNodeModule && fullPath.endsWith('.vue')) {
+    // Try different TypeScript declaration file patterns
+    const patterns = [
+      fullPath.replace('.vue', '.d.vue.ts'),
+      fullPath.replace('.vue', '.vue.d.ts'),
+      fullPath.replace('.vue', '.d.ts')
+    ]
+    
+    for (const pattern of patterns) {
+      if (existsSync(pattern)) {
+        resolvedPath = pattern
+        break
+      }
+    }
+  }
+  
   const checker = createCheckerByJson(
     opts.rootDir,
     {
       extends: `${opts.rootDir}/tsconfig.json`,
       skipLibCheck: true,
-      include: [fullPath],
+      include: [resolvedPath],
       exclude: []
-    },
-  )
+    }
+  );
   return refineMeta(
-    checker.getComponentMeta(fullPath)
+    checker.getComponentMeta(resolvedPath)
   )
 }

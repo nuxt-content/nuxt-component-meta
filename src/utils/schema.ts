@@ -79,6 +79,11 @@ function convertVueTypeToJsonSchema(vueType: string, vueSchema: PropertyMetaSche
     return convertEnumToJsonSchema(vueType, vueSchema)
   }
   
+  // Handle union types when schema is a string (e.g., "string | number | symbol")
+  if (typeof vueSchema === 'string' && vueSchema.includes('|')) {
+    return convertUnionTypeFromString(vueSchema)
+  }
+  
   // Unwrap enums for optionals/unions
   const { type: unwrappedType, schema: unwrappedSchema, enumValues } = unwrapEnumSchema(vueType, vueSchema)
   if (enumValues && unwrappedType === 'boolean') {
@@ -238,6 +243,8 @@ function convertSimpleType(type: string): any {
       return { type: 'number' }
     case 'boolean':
       return { type: 'boolean' }
+    case 'symbol':
+      return { type: 'string' } // JSON Schema doesn't have symbol type, map to string
     case 'object':
       return { type: 'object' }
     case 'array':
@@ -366,7 +373,13 @@ function isEnumType(vueType: string, vueSchema: PropertyMetaSchema): boolean {
         v !== 'undefined' && 
         (v === 'true' || v === 'false')
       )
-      return stringLiterals.length > 0 || booleanLiterals.length > 0
+      // Check if all non-undefined values are primitive types
+      const primitiveTypes = values.filter(v => 
+        v !== 'undefined' && 
+        typeof v === 'string' && 
+        ['string', 'number', 'boolean', 'symbol'].includes(v)
+      )
+      return stringLiterals.length > 0 || booleanLiterals.length > 0 || primitiveTypes.length > 0
     }
   }
   
@@ -408,6 +421,8 @@ function convertEnumToJsonSchema(vueType: string, vueSchema: PropertyMetaSchema)
             types.add('number')
           } else if (value === 'boolean') {
             types.add('boolean')
+          } else if (value === 'symbol') {
+            types.add('symbol') // Keep symbol as distinct type for now
           }
         } else if (typeof value === 'object' && value !== null) {
           // Complex type like (string & {}) - convert to allOf schema
@@ -452,9 +467,13 @@ function convertEnumToJsonSchema(vueType: string, vueSchema: PropertyMetaSchema)
         
         // Add type if it's consistent
         if (types.size === 1) {
-          result.type = Array.from(types)[0]
+          const type = Array.from(types)[0]
+          result.type = type === 'symbol' ? 'string' : type
         } else if (types.size > 1) {
-          result.type = Array.from(types)
+          const mappedTypes = Array.from(types).map(type => type === 'symbol' ? 'string' : type)
+          // Remove duplicates after mapping
+          const uniqueTypes = [...new Set(mappedTypes)]
+          result.type = uniqueTypes.length === 1 ? uniqueTypes[0] : uniqueTypes
         }
         
         // Special case: if it's a boolean enum with just true/false, treat as regular boolean
@@ -468,9 +487,13 @@ function convertEnumToJsonSchema(vueType: string, vueSchema: PropertyMetaSchema)
       
       // If no enum values but we have types, create a union type
       if (types.size > 1) {
-        return { type: Array.from(types) }
+        const mappedTypes = Array.from(types).map(type => type === 'symbol' ? 'string' : type)
+        // Remove duplicates after mapping
+        const uniqueTypes = [...new Set(mappedTypes)]
+        return { type: uniqueTypes.length === 1 ? uniqueTypes[0] : uniqueTypes }
       } else if (types.size === 1) {
-        return { type: Array.from(types)[0] }
+        const type = Array.from(types)[0]
+        return { type: type === 'symbol' ? 'string' : type }
       }
     }
   }
@@ -575,4 +598,26 @@ function convertIntersectionType(typeString: string): any | null {
   }
   
   return null
+}
+
+/**
+ * Convert union type from string to JSON Schema
+ */
+function convertUnionTypeFromString(unionString: string): any {
+  const types = unionString.split('|').map(t => t.trim())
+  const jsonTypes = types.map(type => {
+    if (type === 'symbol') {
+      return 'string' // JSON Schema doesn't have symbol type, map to string
+    }
+    return type
+  })
+  
+  // Remove duplicates
+  const uniqueTypes = [...new Set(jsonTypes)]
+  
+  if (uniqueTypes.length === 1) {
+    return { type: uniqueTypes[0] }
+  } else {
+    return { type: uniqueTypes }
+  }
 }

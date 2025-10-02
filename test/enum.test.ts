@@ -1682,4 +1682,51 @@ describe('Enum Support', () => {
     })
   })
 
+  test('should handle string | number | symbol union type', () => {
+    const unionTypeData = [
+      {
+        "name": "activeColor",
+        "global": false,
+        "description": "",
+        "tags": [],
+        "required": false,
+        "type": "string | number | symbol",
+        "schema": {
+          "kind": "enum",
+          "type": "string | number | symbol",
+          "schema": {
+            "0": "string",
+            "1": "number",
+            "2": "symbol"
+          }
+        }
+      }
+    ]
+
+    const jsonSchema = propsToJsonSchema(unionTypeData as any)
+    
+    expect(jsonSchema.properties?.activeColor).toEqual({
+      type: ["string", "number"] // symbol maps to string and gets deduplicated
+    })
+  })
+
+  test('should handle string | number | symbol union type from string schema', () => {
+    const unionTypeData = [
+      {
+        "name": "activeColor",
+        "global": false,
+        "description": "",
+        "tags": [],
+        "required": false,
+        "type": "string | number | symbol",
+        "schema": "string | number | symbol"
+      }
+    ]
+
+    const jsonSchema = propsToJsonSchema(unionTypeData as any)
+    
+    expect(jsonSchema.properties?.activeColor).toEqual({
+      type: ["string", "number"] // symbol maps to string in JSON Schema
+    })
+  })
 })

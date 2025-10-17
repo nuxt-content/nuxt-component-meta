@@ -72,4 +72,5 @@ export interface ModuleOptions {
 export interface ModuleHooks {
   'component-meta:transformers'(data: TransformersHookData): void
   'component-meta:extend'(data: ExtendHookData): void
+  'component-meta:schema'(schema: NuxtComponentMeta): NuxtComponentMeta | Promise<NuxtComponentMeta>
 }

@@ -5,6 +5,7 @@ import type { ModuleOptions } from './module'
 export type ComponentMetaParserOptions = Omit<ModuleOptions, 'components' | 'metaSources'> & {
   components: Component[]
   metaSources?: NuxtComponentMeta
+  beforeWrite?: (schema: NuxtComponentMeta) => Promise<NuxtComponentMeta> | NuxtComponentMeta
 }
 export type ComponentData = Omit<Component, 'filePath' | 'shortPath'> & {
   meta: ComponentMeta

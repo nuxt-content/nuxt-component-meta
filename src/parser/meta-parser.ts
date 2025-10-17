@@ -9,7 +9,6 @@ import type { ComponentMetaParserOptions, NuxtComponentMeta } from '../types/par
 import { defu } from 'defu'
 import { refineMeta } from './utils'
 
-
 export function useComponentMetaParser (
   {
     outputDir = join(process.cwd(), '.component-meta/'),
@@ -21,7 +20,8 @@ export function useComponentMetaParser (
     transformers = [],
     debug = false,
     metaFields,
-    metaSources = {}
+    metaSources = {},
+    beforeWrite
   }: ComponentMetaParserOptions
 ) {
   /**
@@ -116,8 +116,14 @@ export function useComponentMetaParser (
   /**
    * Write the output file.
    */
-  const updateOutput = (content?: string) => {
+  const updateOutput = async (content?: string) => {
     const path = outputPath + '.mjs'
+
+    // Call beforeWrite hook if provided
+    if (beforeWrite && !content) {
+      components = await beforeWrite(components)
+    }
+
     if (!existsSync(dirname(path))) { fs.mkdirSync(dirname(path), { recursive: true }) }
     if (existsSync(path)) { fs.unlinkSync(path) }
     fs.writeFileSync(

@@ -1,7 +1,7 @@
 <template>
   <div>
     <div>
-      <TestComponent foo="test" />
+      <TestComponent foo="test" name="test" />
       <TestGlobalComponent />
       <TestTyped :hello="`test`" />
     </div>

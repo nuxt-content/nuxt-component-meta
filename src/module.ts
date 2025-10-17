@@ -86,7 +86,7 @@ export default defineNuxtModule<ModuleOptions>({
           const slots = slotNames
             .trim()
             .split(',')
-            .map(s => s.trim().split(':')[0].trim())
+            .map(s => s.trim().split(':')[0]?.trim())
             .map(s => `<slot name="${s}" />`)
           code = code.replace(/<template>/, `<template>\n${slots.join('\n')}\n`)
         }
@@ -137,7 +137,10 @@ export default defineNuxtModule<ModuleOptions>({
       ...options,
       components: [],
       metaSources: {},
-      transformers
+      transformers,
+      beforeWrite: async (schema: NuxtComponentMeta) => {
+        return await nuxt.callHook('component-meta:schema' as any, schema) || schema
+      }
     }
 
     // Resolve loaded components

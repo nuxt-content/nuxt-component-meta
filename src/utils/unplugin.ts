@@ -1,6 +1,7 @@
 import { createUnplugin } from 'unplugin'
 import { useComponentMetaParser } from '../parser/meta-parser'
-import type { ComponentMetaParser, ComponentMetaParserOptions } from '../parser/meta-parser';
+import type { ComponentMetaParser } from '../parser/meta-parser'
+import type { ComponentMetaParserOptions } from '../types/parser'
 
 type ComponentMetaUnpluginOptions = { parser?: ComponentMetaParser, parserOptions: ComponentMetaParserOptions }
 
@@ -12,14 +13,14 @@ export const metaPlugin = createUnplugin<ComponentMetaUnpluginOptions>(({ parser
     return {
       name: 'vite-plugin-nuxt-component-meta',
       enforce: 'post',
-      buildStart () {
+      async buildStart () {
         // avoid parsing meta twice in SSR
         if (_configResolved?.build.ssr) {
           return
         }
 
         instance?.fetchComponents()
-        instance?.updateOutput()
+        await instance?.updateOutput()
       },
       buildEnd () {
         if (!_configResolved?.env.DEV && _configResolved?.env.PROD) {
@@ -32,10 +33,10 @@ export const metaPlugin = createUnplugin<ComponentMetaUnpluginOptions>(({ parser
         configResolved (config) {
           _configResolved = config
         },
-        handleHotUpdate ({ file }) {
+        async handleHotUpdate ({ file }) {
           if (instance && Object.entries(instance.components).some(([, comp]: any) => comp.fullPath === file)) {
             instance.fetchComponent(file)
-            instance.updateOutput()
+            await instance.updateOutput()
           }
         }
       }

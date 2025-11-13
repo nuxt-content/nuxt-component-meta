@@ -70,7 +70,7 @@
     "jiti": "^2.6.1",
     "nuxt": "^4.2.1",
     "release-it": "^19.0.6",
-    "vitest": "^4.0.7",
+    "vitest": "^4.0.8",
     "vue": "^3.5.24"
   },
   "build": {
@@ -115,7 +115,7 @@
       "vue-demi"
     ]
   },
-  "packageManager": "pnpm@10.20.0",
+  "packageManager": "pnpm@10.22.0",
   "release-it": {
     "git": {
       "commitMessage": "chore(release): release v${version}"

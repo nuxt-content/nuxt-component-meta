@@ -56,10 +56,10 @@ export interface ModuleOptions {
    */
   metaFields: {
     type: boolean,
-    props: boolean,
-    slots: boolean,
-    events: boolean,
-    exposed: boolean
+    props: boolean | 'no-schema',
+    slots: boolean | 'no-schema',
+    events: boolean | 'no-schema',
+    exposed: boolean | 'no-schema'
   },
   /**
    * Allow to load external components definitions.

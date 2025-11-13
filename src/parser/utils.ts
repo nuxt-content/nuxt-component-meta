@@ -1,7 +1,8 @@
 import { camelCase } from "scule"
 import type { ComponentMeta } from 'vue-component-meta'
+import type { ModuleOptions } from '../types/module'
 
-export function refineMeta(meta: ComponentMeta, fields: Record<string, boolean> = { type: true, props: true, slots: true, events: true, exposed: true }): ComponentMeta {
+export function refineMeta(meta: ComponentMeta, fields: ModuleOptions['metaFields'] = { type: true, props: true, slots: true, events: true, exposed: true }): ComponentMeta {
   const eventProps = new Set<string>(meta.events.map((event :any) => camelCase(`on_${event.name}`)))
   const props = (fields.props ? meta.props : [])
     .filter((prop: any) => !prop.global && !eventProps.has(prop.name as string))
@@ -34,6 +35,19 @@ export function refineMeta(meta: ComponentMeta, fields: Record<string, boolean> 
 
   // Remove descriptional fileds to reduce chunk size
   removeFields(refinedMeta, ['declarations'])
+
+  if (fields.slots === 'no-schema') {
+    removeFields(refinedMeta.slots, ['schema'])
+  }
+  if (fields.events === 'no-schema') {
+    removeFields(refinedMeta.events, ['schema'])
+  }
+  if (fields.exposed === 'no-schema') {
+    removeFields(refinedMeta.exposed, ['schema'])
+  }
+  if (fields.props === 'no-schema') {
+    removeFields(refinedMeta.props, ['schema'])
+  }
 
   return refinedMeta
 }

@@ -2,7 +2,7 @@ import { camelCase } from "scule"
 import type { ComponentMeta } from 'vue-component-meta'
 import type { ModuleOptions } from '../types/module'
 
-export function refineMeta(meta: ComponentMeta, fields: ModuleOptions['metaFields'] = { type: true, props: true, slots: true, events: true, exposed: true }): ComponentMeta {
+export function refineMeta(meta: ComponentMeta, fields: ModuleOptions['metaFields'] = { type: true, props: true, slots: true, events: true, exposed: true }, overrides: ModuleOptions['overrides'][string] = {}): ComponentMeta {
   const eventProps = new Set<string>(meta.events.map((event :any) => camelCase(`on_${event.name}`)))
   const props = (fields.props ? meta.props : [])
     .filter((prop: any) => !prop.global && !eventProps.has(prop.name as string))
@@ -49,6 +49,19 @@ export function refineMeta(meta: ComponentMeta, fields: ModuleOptions['metaField
     removeFields(refinedMeta.props, ['schema'])
   }
 
+  for (const meta in overrides) {
+    const metaOverrides = overrides[meta as keyof typeof overrides]
+    const metaFields = refinedMeta[meta as keyof ComponentMeta]
+    if (Array.isArray(metaFields)) {
+      for (const fieldName in metaOverrides) {
+        const override = metaOverrides[fieldName]
+        const index = metaFields.findIndex((field: any) => field.name === fieldName)
+        if (index !== -1) {
+          metaFields[index] = override
+        }
+      }
+    }
+  }
   return refinedMeta
 }
 

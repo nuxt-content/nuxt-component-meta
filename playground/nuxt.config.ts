@@ -23,6 +23,16 @@ export default defineNuxtConfig({
   componentMeta: {
     debug: 2,
     exclude: [/node_modules/i],
+    overrides: {
+      TestComponent: {
+        props: {
+          name: {
+            name: 'name',
+            type: 'number'
+          }
+        }
+      }
+    },
     metaSources: [
       {
         TestExternalMeta: {

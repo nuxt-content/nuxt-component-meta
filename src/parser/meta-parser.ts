@@ -17,6 +17,7 @@ export function useComponentMetaParser (
     componentDirs = [],
     checkerOptions,
     exclude = [],
+    overrides = {},
     transformers = [],
     debug = false,
     metaFields,
@@ -201,7 +202,7 @@ export function useComponentMetaParser (
 
       Object.assign(
         component.meta,
-        refineMeta(meta, metaFields),
+        refineMeta(meta, metaFields, overrides[component.pascalName] || {}),
         {
           hash: codeHash
         }

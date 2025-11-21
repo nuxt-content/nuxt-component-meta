@@ -1,6 +1,7 @@
 import type { MetaCheckerOptions } from 'vue-component-meta'
 import type { ComponentsDir, ComponentsOptions } from '@nuxt/schema'
 import type { TransformersHookData, ExtendHookData, NuxtComponentMeta } from '.'
+import type { JsonSchema } from './schema'
 
 export interface ModuleOptions {
   /**
@@ -51,6 +52,31 @@ export interface ModuleOptions {
    * Filter all components that are not global.
    */
   globalsOnly?: boolean,
+  overrides: {
+    [componentName: string]: {
+      props?: {
+        [propName: string]: {
+          "name": string,
+          "global"?: boolean,
+          "description"?: string,
+          "tags"?: Array<{ "name": string, "text": string }>,
+          "required"?: boolean,
+          "type": string,
+          "schema"?: JsonSchema,
+          "default"?: string
+        }
+      }
+      slots?: {
+        [slotName: string]: any
+      }
+      events?: {
+        [eventName: string]: any
+      }
+      exposed?: {
+        [exposedName: string]: any
+      }
+    }
+  }
   /**
    * Filter meta properties to be included in the output.
    */

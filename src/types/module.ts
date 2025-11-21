@@ -57,7 +57,7 @@ export interface ModuleOptions {
       props?: {
         [propName: string]: {
           "name": string,
-          "global": boolean,
+          "global"?: boolean,
           "description"?: string,
           "tags"?: Array<{ "name": string, "text": string }>,
           "required"?: boolean,

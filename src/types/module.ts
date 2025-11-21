@@ -61,7 +61,7 @@ export interface ModuleOptions {
           "description"?: string,
           "tags"?: Array<{ "name": string, "text": string }>,
           "required"?: boolean,
-          "type": String,
+          "type": string,
           "schema"?: JsonSchema,
           "default"?: string
         }

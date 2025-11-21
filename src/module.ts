@@ -138,6 +138,7 @@ export default defineNuxtModule<ModuleOptions>({
       components: [],
       metaSources: {},
       transformers,
+      overrides: options.overrides || {},
       beforeWrite: async (schema: NuxtComponentMeta) => {
         return await nuxt.callHook('component-meta:schema' as any, schema) || schema
       }

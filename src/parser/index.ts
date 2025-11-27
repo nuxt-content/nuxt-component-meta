@@ -57,7 +57,7 @@ export function getComponentMeta(component: string, options?: Options): Componen
  * @returns component meta
  */
 function _getComponentMeta(fullPath: string, opts: Options) {
-  let resolvedPath = tryResolveTypesDeclaration(fullPath)
+  const resolvedPath = tryResolveTypesDeclaration(fullPath)
   
   const checker = createCheckerByJson(
     opts.rootDir,

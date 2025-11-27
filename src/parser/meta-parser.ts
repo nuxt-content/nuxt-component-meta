@@ -7,7 +7,7 @@ import { resolvePathSync } from 'mlly'
 import { hash } from 'ohash'
 import type { ComponentMetaParserOptions, NuxtComponentMeta } from '../types/parser'
 import { defu } from 'defu'
-import { refineMeta } from './utils'
+import { refineMeta, tryResolveTypesDeclaration } from './utils'
 
 export function useComponentMetaParser (
   {
@@ -168,9 +168,10 @@ export function useComponentMetaParser (
         // We assume that components from node_modules don't change
         return
       }
+      const resolvedPath = tryResolveTypesDeclaration(component.fullPath)
 
       // Read component code
-      let code = fs.readFileSync(component.fullPath, 'utf-8')
+      let code = fs.readFileSync(resolvedPath, 'utf-8')
       const codeHash = hash(code)
       if (codeHash === component.meta.hash) {
         return
@@ -195,10 +196,10 @@ export function useComponentMetaParser (
 
 
         // Ensure file is updated
-        checker.updateFile(component.fullPath, code)
+        checker.updateFile(resolvedPath, code)
       }
 
-      const meta = checker.getComponentMeta(component.fullPath)
+      const meta = checker.getComponentMeta(resolvedPath)
 
       Object.assign(
         component.meta,

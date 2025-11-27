@@ -44,6 +44,8 @@ export default defineNuxtModule<ModuleOptions>({
       'nuxt/dist/app/components/nuxt-route-announcer',
       'nuxt/dist/app/components/nuxt-stubs',
       (component) => component.filePath.endsWith('.svg')
+        // exclude d.vue.ts files, main vue files are already included and we don't need to include the d.vue.ts files
+        || component.filePath.endsWith('.d.vue.ts')
     ],
     include: [],
     metaFields: {

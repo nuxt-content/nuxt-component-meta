@@ -1,6 +1,6 @@
 import { createCheckerByJson } from "vue-component-meta"
 import type { ComponentMeta } from 'vue-component-meta'
-import { refineMeta } from "./utils"
+import { refineMeta, tryResolveTypesDeclaration } from "./utils"
 import { isAbsolute, join } from "pathe"
 import { existsSync, readFileSync, writeFileSync, mkdirSync } from 'fs'
 import { withBase } from "ufo"
@@ -57,26 +57,7 @@ export function getComponentMeta(component: string, options?: Options): Componen
  * @returns component meta
  */
 function _getComponentMeta(fullPath: string, opts: Options) {
-  // Check if the component is in node_modules and adjust configuration accordingly
-  const isNodeModule = fullPath.includes('node_modules')
-  
-  // For node_modules components, try to find the TypeScript declaration file first
-  let resolvedPath = fullPath
-  if (isNodeModule && fullPath.endsWith('.vue')) {
-    // Try different TypeScript declaration file patterns
-    const patterns = [
-      fullPath.replace('.vue', '.d.vue.ts'),
-      fullPath.replace('.vue', '.vue.d.ts'),
-      fullPath.replace('.vue', '.d.ts')
-    ]
-    
-    for (const pattern of patterns) {
-      if (existsSync(pattern)) {
-        resolvedPath = pattern
-        break
-      }
-    }
-  }
+  let resolvedPath = tryResolveTypesDeclaration(fullPath)
   
   const checker = createCheckerByJson(
     opts.rootDir,

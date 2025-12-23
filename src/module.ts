@@ -93,6 +93,15 @@ export default defineNuxtModule<ModuleOptions>({
           code = code.replace(/<template>/, `<template>\n${slots.join('\n')}\n`)
         }
 
+        if (/declare const __VLS_export/.test(code)) {
+          const matchWithSlots = code.match(/__VLS_WithSlots<\s*import\("vue"\)\.DefineComponent<([\s\S]*?)>,\s*[A-Za-z0-9_]+\s*>/m);
+          const matchDefineOnly = matchWithSlots ? null : code.match(/import\("vue"\)\.DefineComponent<([\s\S]*?)>/m);
+          const generic = (matchWithSlots?.[1] || matchDefineOnly?.[1] || 'any');
+          const head = code.split(/declare const __VLS_export/)[0] || '';
+        
+          code = `${head}import type { DefineComponent } from 'vue';\nexport default ({} as DefineComponent<${generic}>);`;
+        }
+
         return { component, code }
       }
     ],

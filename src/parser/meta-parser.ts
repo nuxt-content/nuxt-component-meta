@@ -68,6 +68,14 @@ export function useComponentMetaParser (
       {
         extends: `${rootDir}/tsconfig.json`,
         skipLibCheck: true,
+        compilerOptions: {
+          // Ensure Nuxt virtual aliases like '#build' resolve for type analysis
+          baseUrl: outputDir,
+          paths: {
+            "#build": ["."],
+            "#build/*": ["*"],
+          }
+        },
         include: componentDirs.map((dir) => {
           const path = typeof dir === 'string' ? dir : (dir?.path || '')
           const ext = path.split('.').pop()!
@@ -193,7 +201,6 @@ export function useComponentMetaParser (
           component = transformResult?.component || component
           code = transformResult?.code || code
         }
-
 
         // Ensure file is updated
         checker.updateFile(resolvedPath, code)

@@ -93,6 +93,19 @@ export default defineNuxtModule<ModuleOptions>({
           code = code.replace(/<template>/, `<template>\n${slots.join('\n')}\n`)
         }
 
+        if (/declare const __VLS_export/.test(code)) {
+          const matchWithSlots = code.match(/__VLS_WithSlots<\s*import\("vue"\)\.DefineComponent<([\s\S]*?)>,\s*([A-Za-z0-9_]+)\s*>/m);
+          const matchDefineOnly = matchWithSlots ? null : code.match(/import\("vue"\)\.DefineComponent<([\s\S]*?)>/m);
+          const generic = (matchWithSlots?.[1] || matchDefineOnly?.[1] || 'any');
+          const head = code.split(/declare const __VLS_export/)[0] || '';
+          const extend = matchWithSlots ? ` & { new (): { $slots: ${matchWithSlots?.[2]} } }` : ''
+
+          code = [
+            `${head}`,
+            `export default {} as (import("vue").DefineComponent<${generic}>${extend});`
+          ].join('\n');
+        }
+
         return { component, code }
       }
     ],
@@ -103,7 +116,20 @@ export default defineNuxtModule<ModuleOptions>({
           'NuxtComponentMetaNames', // avoid loop
           'RouteLocationRaw', // vue router
           'RouteLocationPathRaw', // vue router
-          'RouteLocationNamedRaw' // vue router
+          'RouteLocationNamedRaw', // vue router
+          (_, type) => {
+            const symbol = type?.symbol || type?.aliasSymbol;
+            const declarations = symbol?.declarations || [];
+            for (const decl of declarations) {
+              const fileName = decl?.getSourceFile?.()?.fileName;
+              if (!fileName) {
+                continue;
+              }
+              if (fileName.includes("/node_modules/typescript/")) {
+                return true;
+              }
+            }
+          }
         ]
       }
     },

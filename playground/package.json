@@ -10,7 +10,8 @@
   "scripts": {
     "dev": "nuxi dev",
     "build": "nuxi build",
-    "generate": "nuxi generate"
+    "generate": "nuxi generate",
+    "prepare": "nuxi prepare"
   },
   "dependencies": {
     "@amoayun/monaco-editor-vue3": "^1.0.20",

@@ -5,7 +5,7 @@
 </template>
 
 <script lang="ts" setup>
-import type { ButtonInlineProps } from '../../../shared/types/button'
+import type { ButtonInlineProps } from '../../../shared/types/button-inline-props'
 
 const {
   size = 'medium',

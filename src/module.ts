@@ -117,19 +117,6 @@ export default defineNuxtModule<ModuleOptions>({
           'RouteLocationRaw', // vue router
           'RouteLocationPathRaw', // vue router
           'RouteLocationNamedRaw', // vue router
-          (_, type) => {
-            const symbol = type?.symbol || type?.aliasSymbol;
-            const declarations = symbol?.declarations || [];
-            for (const decl of declarations) {
-              const fileName = decl?.getSourceFile?.()?.fileName;
-              if (!fileName) {
-                continue;
-              }
-              if (fileName.includes("/node_modules/typescript/")) {
-                return true;
-              }
-            }
-          }
         ]
       }
     },

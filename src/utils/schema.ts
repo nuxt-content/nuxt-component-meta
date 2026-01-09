@@ -1,5 +1,6 @@
 import type { ComponentMeta, PropertyMetaSchema } from 'vue-component-meta'
 import type { JsonSchema } from '../types/schema'
+import { isNativeBrowserType } from '../parser/utils'
 
 /**
  * Converts Vue component props metadata to JSON Schema format
@@ -80,8 +81,20 @@ function convertVueTypeToJsonSchema(vueType: string, vueSchema: PropertyMetaSche
   }
   
   // Handle union types when schema is a string (e.g., "string | number | symbol")
+  // BUT: strip out "| undefined" for optional types since JSON Schema handles optionality differently
   if (typeof vueSchema === 'string' && vueSchema.includes('|')) {
-    return convertUnionTypeFromString(vueSchema)
+    // Remove " | undefined" or "undefined | " from the type
+    const withoutUndefined = vueSchema.replace(/\s*\|\s*undefined\s*|\s*undefined\s*\|\s*/g, '').trim()
+    
+    // If after removing undefined, there's still a union, convert it
+    if (withoutUndefined.includes('|')) {
+      return convertUnionTypeFromString(withoutUndefined)
+    }
+    // If it's just a single type now, update both vueType and vueSchema and continue
+    if (withoutUndefined) {
+      vueType = withoutUndefined
+      vueSchema = withoutUndefined
+    }
   }
   
   // Unwrap enums for optionals/unions
@@ -172,6 +185,17 @@ function convertVueTypeToJsonSchema(vueType: string, vueSchema: PropertyMetaSche
       nested = vs
     }
     if (nested) {
+      // Check if nested schema is empty (e.g., native types that were ignored)
+      const hasProperties = Object.keys(nested).length > 0
+      if (!hasProperties) {
+        return { 
+          type: 'object',
+          description: unwrappedType !== 'object' && unwrappedType !== 'Object' 
+            ? `Native type: ${unwrappedType}` 
+            : undefined
+        }
+      }
+      
       const properties = convertNestedSchemaToJsonSchemaProperties(nested as Record<string, any>)
       // Collect required fields
       const required = Object.entries(nested)
@@ -252,9 +276,16 @@ function convertSimpleType(type: string): any {
     case 'null':
       return { type: 'null' }
     default:
-      // For complex types, return object type as fallback
+      // return object type as fallback with the type name as description
       if (type.includes('{}') || type.includes('Object')) {
         return { type: 'object' }
+      }
+      // If it's a known native type, treat it as a simple object
+      if (isNativeBrowserType(type)) {
+        return { 
+          type: 'object',
+          description: `Native type: ${type}`
+        }
       }
       return {} // unknown types
   }
@@ -466,18 +497,20 @@ function convertEnumToJsonSchema(vueType: string, vueSchema: PropertyMetaSchema)
         }
         
         // Add type if it's consistent
-        if (types.size === 1) {
-          const type = Array.from(types)[0]
+        // But exclude __intersection__ from the type list as it's not a real JSON Schema type
+        const realTypes = new Set(Array.from(types).filter(t => t !== '__intersection__'))
+        if (realTypes.size === 1) {
+          const type = Array.from(realTypes)[0]
           result.type = type === 'symbol' ? 'string' : type
-        } else if (types.size > 1) {
-          const mappedTypes = Array.from(types).map(type => type === 'symbol' ? 'string' : type)
+        } else if (realTypes.size > 1) {
+          const mappedTypes = Array.from(realTypes).map(type => type === 'symbol' ? 'string' : type)
           // Remove duplicates after mapping
           const uniqueTypes = [...new Set(mappedTypes)]
           result.type = uniqueTypes.length === 1 ? uniqueTypes[0] : uniqueTypes
         }
         
         // Special case: if it's a boolean enum with just true/false, treat as regular boolean
-        if (types.size === 1 && types.has('boolean') && enumValues.length === 2 && 
+        if (realTypes.size === 1 && realTypes.has('boolean') && enumValues.length === 2 && 
             enumValues.includes(true) && enumValues.includes(false)) {
           return { type: 'boolean' }
         }
@@ -486,8 +519,38 @@ function convertEnumToJsonSchema(vueType: string, vueSchema: PropertyMetaSchema)
       }
       
       // If no enum values but we have types, create a union type
+      // But handle intersection types specially
+      // eg. Partial<HTMLImageElement> & { [key: string]: any }
+      if (types.has('__intersection__')) {
+        const intersectionType = Object.values(schema).find(v => 
+          typeof v === 'object' && v?.type && v.type.includes(' & ')
+        )
+        
+        if (intersectionType) {
+          const convertedIntersection = convertIntersectionType((intersectionType as unknown as { type: string }).type)
+          if (convertedIntersection) {
+            // Get all other types (excluding intersection and undefined)
+            const realTypes = Array.from(types).filter(t => t !== '__intersection__' && t !== 'undefined')
+            
+            if (realTypes.length === 0) {
+              // Only intersection type, return it directly
+              return convertedIntersection
+            } else {
+              // Create anyOf with the intersection and other types
+              const otherSchemas = realTypes.map(t => convertSimpleType(t))
+              return {
+                anyOf: [
+                  ...otherSchemas,
+                  convertedIntersection
+                ]
+              }
+            }
+          }
+        }
+      }
+      
       if (types.size > 1) {
-        const mappedTypes = Array.from(types).map(type => type === 'symbol' ? 'string' : type)
+        const mappedTypes = Array.from(types).filter(t => t !== '__intersection__').map(type => type === 'symbol' ? 'string' : type)
         // Remove duplicates after mapping
         const uniqueTypes = [...new Set(mappedTypes)]
         return { type: uniqueTypes.length === 1 ? uniqueTypes[0] : uniqueTypes }

@@ -6,9 +6,9 @@ import { useNuxtApp, useAsyncData } from '#imports'
 import type { NuxtComponentMetaNames } from '#nuxt-component-meta/types'
 
 // @ts-ignore
-export const __getComponentMeta = async () => {
+export const __getComponentMeta = async (): Promise<NuxtComponentMeta> => {
   const __metas = await import('#nuxt-component-meta')
-  return __metas?.default || __metas
+  return (__metas as unknown as { default?: NuxtComponentMeta })?.default || __metas
 }
 
 export async function useComponentMeta <T> (componentName?: NuxtComponentMetaNames | Ref<NuxtComponentMetaNames>): Promise<ComputedRef<T extends string ? ComponentData : NuxtComponentMeta>> {

@@ -88,7 +88,7 @@ const invalidTestCases = [
 
 describe('validation', () => {
   test('Zod', async () => {
-    const meta = getComponentMeta('playground/components/TestComponent.vue')
+    const meta = getComponentMeta('playground/app/components/TestComponent.vue')
     const jsonSchema = propsToJsonSchema(meta.props)
     const zodSchema = jsonSchemaToZod(jsonSchema, { module: "cjs" })
     const zod = eval(zodSchema)
@@ -105,9 +105,9 @@ describe('validation', () => {
   })
 
   test('AJV', () => {
-    const meta = getComponentMeta('playground/components/TestComponent.vue')
+    const meta = getComponentMeta('playground/app/components/TestComponent.vue')
     const jsonSchema = propsToJsonSchema(meta.props)
-    
+    console.log(jsonSchema)
     // Create AJV instance
     const ajv = new Ajv({ allErrors: true })
     const validate = ajv.compile(jsonSchema)

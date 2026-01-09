@@ -1,7 +1,6 @@
 import { camelCase } from "scule"
 import type { ComponentMeta } from 'vue-component-meta'
 import type { ModuleOptions } from '../types/module'
-import { existsSync } from "fs"
 
 export function refineMeta(meta: ComponentMeta, fields: ModuleOptions['metaFields'] = { type: true, props: true, slots: true, events: true, exposed: true }, overrides: ModuleOptions['overrides'][string] = {}): ComponentMeta {
   const eventProps = new Set<string>(meta.events.map((event :any) => camelCase(`on_${event.name}`)))
@@ -52,7 +51,7 @@ export function refineMeta(meta: ComponentMeta, fields: ModuleOptions['metaField
 
   for (const meta in overrides) {
     const metaOverrides = overrides[meta as keyof typeof overrides]
-    const metaFields = refinedMeta[meta as keyof ComponentMeta]
+    const metaFields = refinedMeta[meta as keyof typeof refinedMeta]
     if (Array.isArray(metaFields)) {
       for (const fieldName in metaOverrides) {
         const override = metaOverrides[fieldName]
@@ -66,13 +65,30 @@ export function refineMeta(meta: ComponentMeta, fields: ModuleOptions['metaField
   return refinedMeta
 }
 
-function stripeTypeScriptInternalTypesSchema (type: any, topLevel: boolean = true): any {
+function stripeTypeScriptInternalTypesSchema (type: any, _topLevel: boolean = true): any {
   if (!type) {
     return type
   }
 
-  if (!topLevel && type.declarations && type.declarations.find((d: any) => d.file.includes('node_modules/typescript') || d.file.includes('@vue/runtime-core'))) {
-    return false
+  // Check if this type's schema is a native browser/Node type
+  if (type.schema && typeof type.schema === 'object' && type.schema.kind === 'object' && 
+      typeof type.schema.type === 'string' && isNativeBrowserType(type.schema.type)) {
+    return {
+      ...type,
+      schema: type.schema.type
+    }
+  }
+
+  // Check if this is an object with many properties from native types
+  // This handles cases like Partial<HTMLImageElement> where we get hundreds of optional properties
+  if (type.kind === 'object' && type.schema && typeof type.schema === 'object' && !Array.isArray(type.schema)) {
+    if (isNativeBrowserTypeSchema(type)) {
+      return {
+        ...type,
+        schema: type.schema.type || 'object',
+        declarations: undefined
+      }
+    }
   }
 
   if (Array.isArray(type)) {
@@ -117,6 +133,34 @@ function stripeTypeScriptInternalTypesSchema (type: any, topLevel: boolean = tru
   }
 }
 
+export function isNativeBrowserType(typeName: string): boolean {
+  const nativeTypes = [
+    // HTML Elements
+    'HTMLElement', 'HTMLCanvasElement', 'HTMLDivElement', 'HTMLSpanElement', 
+    'HTMLInputElement', 'HTMLButtonElement', 'HTMLFormElement', 'HTMLImageElement',
+    'HTMLAnchorElement', 'HTMLLinkElement', 'HTMLScriptElement', 'HTMLStyleElement',
+    'HTMLTableElement', 'HTMLIFrameElement', 'HTMLVideoElement', 'HTMLAudioElement',
+    'HTMLSelectElement', 'HTMLOptionElement', 'HTMLTextAreaElement', 'HTMLLabelElement',
+    'HTMLSlotElement',
+    // DOM
+    'Element', 'Document', 'Window', 'Node', 'NodeList', 'HTMLCollection',
+    'DOMTokenList', 'NamedNodeMap', 'DocumentFragment', 'ShadowRoot',
+    // Events
+    'Event', 'MouseEvent', 'KeyboardEvent', 'FocusEvent', 'InputEvent',
+    'EventTarget', 'EventListener',
+    // Canvas/WebGL
+    'CanvasRenderingContext2D', 'WebGLRenderingContext', 'WebGL2RenderingContext',
+    'ImageBitmap', 'OffscreenCanvas',
+    // Media
+    'MediaStream', 'MediaStreamTrack', 'MediaRecorder',
+    // Storage/Data
+    'Storage', 'SessionStorage', 'LocalStorage', 'DOMStringMap',
+    // Node.js types
+    'Buffer', 'Process', 'Stream'
+  ]
+  return nativeTypes.includes(typeName)
+}
+
 function removeFields(obj: Record<string, any>, fieldsToRemove: string[]): any {
   // Check if the obj is an object or array, otherwise return it as-is
   if (obj && typeof obj === 'object') {
@@ -135,27 +179,39 @@ function removeFields(obj: Record<string, any>, fieldsToRemove: string[]): any {
   return obj;
 }
 
-export function tryResolveTypesDeclaration(fullPath: string): string {
-  // Check if the component is in node_modules and adjust configuration accordingly
-  const isNodeModule = fullPath.includes('node_modules')
-  
-  // For node_modules components, try to find the TypeScript declaration file first
-  let resolvedPath = fullPath
-  if (isNodeModule && fullPath.endsWith('.vue')) {
-    // Try different TypeScript declaration file patterns
-    const patterns = [
-      fullPath.replace('.vue', '.d.vue.ts'),
-      fullPath.replace('.vue', '.vue.d.ts'),
-      fullPath.replace('.vue', '.d.ts')
-    ]
+
+
+function isNativeBrowserTypeSchema(schema: any): boolean {
+  if (schema.kind === 'object' && typeof schema.type === 'string' && isNativeBrowserType(schema.type)) {
+    return true
+  }
+
+  const schemaProps = schema.schema
+  const propKeys = Object.keys(schemaProps)
+
+  // If there are many properties (>50), check if they're from a native type
+  if (propKeys.length > 50) {
+    // Sample a few properties to see if they reference native types
+    const sampleSize = Math.min(10, propKeys.length)
+    let nativeCount = 0
     
-    for (const pattern of patterns) {
-      if (existsSync(pattern)) {
-        resolvedPath = pattern
-        break
+    for (let i = 0; i < sampleSize; i++) {
+      const prop = schemaProps[propKeys[i] as keyof typeof schemaProps]
+      if (prop && prop.description && typeof prop.description === 'string') {
+        // Check if this property's description indicates it's from a native type
+        if (prop.description.includes('MDN Reference') ||
+            prop.description.includes('[MDN') ||
+            prop.description.includes('developer.mozilla.org')) {
+          nativeCount++
+        }
       }
+    }
+    
+    // If more than half the sampled properties are from native types, simplify this entire object
+    if (nativeCount > sampleSize / 2) {
+      return true
     }
   }
 
-  return resolvedPath
+  return false
 }

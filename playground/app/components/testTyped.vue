@@ -10,7 +10,7 @@
 </template>
 
 <script setup lang="ts">
-withDefaults(defineProps<{
+interface PropsObject {
   hello: string,
   booleanProp?: boolean,
   numberProp?: number,
@@ -20,7 +20,9 @@ withDefaults(defineProps<{
    * @since v1.0.0
    */
   foo?: string[]
-}>(), {
+  partialImage?: string | (Partial<HTMLImageElement> & { [key: string]: any })
+}
+withDefaults(defineProps<PropsObject>(), {
   numberProp: 42,
   foo: () => ['bar', 'baz']
 })

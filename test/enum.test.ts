@@ -4,7 +4,7 @@ import { propsToJsonSchema } from '../src/utils/schema'
 
 describe('Enum Support', () => {
   test('should handle enum types correctly', async () => {
-    const meta = getComponentMeta('playground/components/EnumTestComponent.vue')
+    const meta = getComponentMeta('playground/app/components/EnumTestComponent.vue')
     const jsonSchema = propsToJsonSchema(meta.props)
     
     expect(jsonSchema).toBeDefined()

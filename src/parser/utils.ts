@@ -65,7 +65,7 @@ export function refineMeta(meta: ComponentMeta, fields: ModuleOptions['metaField
   return refinedMeta
 }
 
-function stripeTypeScriptInternalTypesSchema (type: any, topLevel: boolean = true): any {
+function stripeTypeScriptInternalTypesSchema (type: any, _topLevel: boolean = true): any {
   if (!type) {
     return type
   }
@@ -79,12 +79,15 @@ function stripeTypeScriptInternalTypesSchema (type: any, topLevel: boolean = tru
     }
   }
 
-  // Check if this is a native browser/Node type at the direct level (for nested properties)
-  if (type.kind === 'object' && typeof type.type === 'string' && isNativeBrowserType(type.type)) {
-    return {
-      ...type,
-      schema: type.type,
-      declarations: undefined
+  // Check if this is an object with many properties from native types
+  // This handles cases like Partial<HTMLImageElement> where we get hundreds of optional properties
+  if (type.kind === 'object' && type.schema && typeof type.schema === 'object' && !Array.isArray(type.schema)) {
+    if (isNativeBrowserTypeSchema(type)) {
+      return {
+        ...type,
+        schema: type.schema.type || 'object',
+        declarations: undefined
+      }
     }
   }
 
@@ -174,4 +177,41 @@ function removeFields(obj: Record<string, any>, fieldsToRemove: string[]): any {
     }
   }
   return obj;
+}
+
+
+
+function isNativeBrowserTypeSchema(schema: any): boolean {
+  if (schema.kind === 'object' && typeof schema.type === 'string' && isNativeBrowserType(schema.type)) {
+    return true
+  }
+
+  const schemaProps = schema.schema
+  const propKeys = Object.keys(schemaProps)
+
+  // If there are many properties (>50), check if they're from a native type
+  if (propKeys.length > 50) {
+    // Sample a few properties to see if they reference native types
+    const sampleSize = Math.min(10, propKeys.length)
+    let nativeCount = 0
+    
+    for (let i = 0; i < sampleSize; i++) {
+      const prop = schemaProps[propKeys[i] as keyof typeof schemaProps]
+      if (prop && prop.description && typeof prop.description === 'string') {
+        // Check if this property's description indicates it's from a native type
+        if (prop.description.includes('MDN Reference') ||
+            prop.description.includes('[MDN') ||
+            prop.description.includes('developer.mozilla.org')) {
+          nativeCount++
+        }
+      }
+    }
+    
+    // If more than half the sampled properties are from native types, simplify this entire object
+    if (nativeCount > sampleSize / 2) {
+      return true
+    }
+  }
+
+  return false
 }

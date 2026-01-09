@@ -11,7 +11,7 @@ interface Book {
   publishedYear: number
 }
 
-const props = defineProps<{
+defineProps<{
   // Test Interface[] syntax
   authors?: Author[]
   books: Book[]

@@ -223,4 +223,23 @@ describe('ComponentMetaParser', () => {
     expect(canvasPropJSON.properties).toBeUndefined()
     expect(canvasPropJSON.required).toBeUndefined()
   })
+
+  test('should simplify Partial<NativeType> in union types', () => {
+    const meta = getComponentMeta('playground/app/components/testTyped.vue')
+    const jsonSchema = propsToJsonSchema(meta.props)
+
+    // partialImage is: string | (Partial<HTMLImageElement> & { [key: string]: any })
+    // Should be converted to anyOf with string and the intersection
+    expect(jsonSchema.properties?.partialImage).toEqual({
+      anyOf: [
+        { type: 'string' },
+        {
+          allOf: [
+            { type: 'Partial<HTMLImageElement>' },
+            { type: '{ [key: string]: any; }' }
+          ]
+        }
+      ]
+    })
+  })
 })

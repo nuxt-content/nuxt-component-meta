@@ -1,7 +1,6 @@
 import { camelCase } from "scule"
 import type { ComponentMeta } from 'vue-component-meta'
 import type { ModuleOptions } from '../types/module'
-import { existsSync } from "fs"
 
 export function refineMeta(meta: ComponentMeta, fields: ModuleOptions['metaFields'] = { type: true, props: true, slots: true, events: true, exposed: true }, overrides: ModuleOptions['overrides'][string] = {}): ComponentMeta {
   const eventProps = new Set<string>(meta.events.map((event :any) => camelCase(`on_${event.name}`)))
@@ -133,29 +132,4 @@ function removeFields(obj: Record<string, any>, fieldsToRemove: string[]): any {
     }
   }
   return obj;
-}
-
-export function tryResolveTypesDeclaration(fullPath: string): string {
-  // Check if the component is in node_modules and adjust configuration accordingly
-  const isNodeModule = fullPath.includes('node_modules')
-  
-  // For node_modules components, try to find the TypeScript declaration file first
-  let resolvedPath = fullPath
-  if (isNodeModule && fullPath.endsWith('.vue')) {
-    // Try different TypeScript declaration file patterns
-    const patterns = [
-      fullPath.replace('.vue', '.d.vue.ts'),
-      fullPath.replace('.vue', '.vue.d.ts'),
-      fullPath.replace('.vue', '.d.ts')
-    ]
-    
-    for (const pattern of patterns) {
-      if (existsSync(pattern)) {
-        resolvedPath = pattern
-        break
-      }
-    }
-  }
-
-  return resolvedPath
 }

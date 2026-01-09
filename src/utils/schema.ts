@@ -80,8 +80,20 @@ function convertVueTypeToJsonSchema(vueType: string, vueSchema: PropertyMetaSche
   }
   
   // Handle union types when schema is a string (e.g., "string | number | symbol")
+  // BUT: strip out "| undefined" for optional types since JSON Schema handles optionality differently
   if (typeof vueSchema === 'string' && vueSchema.includes('|')) {
-    return convertUnionTypeFromString(vueSchema)
+    // Remove " | undefined" or "undefined | " from the type
+    const withoutUndefined = vueSchema.replace(/\s*\|\s*undefined\s*|\s*undefined\s*\|\s*/g, '').trim()
+    
+    // If after removing undefined, there's still a union, convert it
+    if (withoutUndefined.includes('|')) {
+      return convertUnionTypeFromString(withoutUndefined)
+    }
+    // If it's just a single type now, update both vueType and vueSchema and continue
+    if (withoutUndefined) {
+      vueType = withoutUndefined
+      vueSchema = withoutUndefined
+    }
   }
   
   // Unwrap enums for optionals/unions

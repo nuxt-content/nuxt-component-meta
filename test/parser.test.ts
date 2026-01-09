@@ -4,7 +4,7 @@ import { propsToJsonSchema } from '../src/utils/schema'
 
 describe('ComponentMetaParser', () => {
   test('should be able to fetch component meta', async () => {
-    const meta = getComponentMeta('playground/components/TestComponent.vue')
+    const meta = getComponentMeta('playground/app/components/TestComponent.vue')
 
     expect(meta).toBeDefined()
     expect(meta.props).toBeDefined()
@@ -17,7 +17,7 @@ describe('ComponentMetaParser', () => {
   })
 
   test('propsToJsonSchema should convert props to JSON Schema format', async () => {
-    const meta = getComponentMeta('playground/components/TestComponent.vue')
+    const meta = getComponentMeta('playground/app/components/TestComponent.vue')
     const jsonSchema = propsToJsonSchema(meta.props)
     expect(jsonSchema).toBeDefined()
     expect(jsonSchema.type).toBe('object')
@@ -94,7 +94,7 @@ describe('ComponentMetaParser', () => {
   })
 
   test('TestD.vue', () => {
-    const meta = getComponentMeta('playground/components/TestD.vue')
+    const meta = getComponentMeta('playground/app/components/TestD.vue')
     const result = propsToJsonSchema(meta.props)
 
     expect(result.properties?.foo).toEqual({
@@ -114,5 +114,99 @@ describe('ComponentMetaParser', () => {
         ]
       }
     })
+  })
+
+  test('should handle Interface[] syntax correctly', () => {
+    const meta = getComponentMeta('playground/app/components/TestInterfaceArray.vue')
+    const jsonSchema = propsToJsonSchema(meta.props)
+
+    // Test required Interface[] prop
+    expect(jsonSchema.properties?.books).toEqual({
+      type: 'array',
+      items: {
+        type: 'object',
+        properties: {
+          title: { type: 'string' },
+          isbn: { type: 'string' },
+          publishedYear: { type: 'number' }
+        },
+        required: ['title', 'isbn', 'publishedYear'],
+        additionalProperties: false
+      }
+    })
+
+    // Test optional Interface[] prop with enum
+    expect(jsonSchema.properties?.authors).toEqual({
+      type: 'array',
+      items: {
+        type: 'object',
+        properties: {
+          name: { type: 'string' },
+          email: { type: 'string' },
+          role: { 
+            type: 'string',
+            enum: ['admin', 'user', 'guest']
+          }
+        },
+        required: ['name', 'email'],
+        additionalProperties: false
+      }
+    })
+
+    // Test required array should include 'books'
+    expect(jsonSchema.required).toContain('books')
+    expect(jsonSchema.required).not.toContain('authors')
+  })
+
+  test('should handle array props with primitive types', () => {
+    const meta = getComponentMeta('playground/app/components/TestInterfaceArray.vue')
+    const jsonSchema = propsToJsonSchema(meta.props)
+
+    // Test string array
+    expect(jsonSchema.properties?.tags).toEqual({
+      type: 'array',
+      items: { type: 'string' }
+    })
+
+    // Test number array
+    expect(jsonSchema.properties?.ratings).toEqual({
+      type: 'array',
+      items: { type: 'number' }
+    })
+  })
+
+  test('forceUseTs option should work with TypeScript components', () => {
+    // This test verifies that TypeScript-only features work
+    const meta = getComponentMeta('playground/app/components/TestInterfaceArray.vue')
+    
+    // Should successfully parse TypeScript interface definitions
+    expect(meta.props).toBeDefined()
+    expect(meta.props.length).toBeGreaterThan(0)
+    
+    // Verify it can extract interface types
+    const authorsProp = meta.props.find(p => p.name === 'authors')
+    expect(authorsProp).toBeDefined()
+    expect(authorsProp?.type).toContain('Author[]')
+    
+    const booksProp = meta.props.find(p => p.name === 'books')
+    expect(booksProp).toBeDefined()
+    expect(booksProp?.type).toContain('Book[]')
+  })
+
+  test('should parse JS components without forceUseTs', () => {
+    // Test that JS components (non-TypeScript Vue SFCs) still work
+    const meta = getComponentMeta('playground/app/components/TestJSComponent.vue')
+    const jsonSchema = propsToJsonSchema(meta.props)
+
+    expect(jsonSchema.properties?.message).toEqual({
+      type: 'string',
+      default: 'Hello from JS'
+    })
+
+    expect(jsonSchema.properties?.count).toEqual({
+      type: 'number'
+    })
+
+    expect(jsonSchema.required).toEqual(['count'])
   })
 })

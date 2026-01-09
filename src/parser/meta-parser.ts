@@ -2,12 +2,13 @@ import { performance } from 'perf_hooks'
 import fs, { existsSync } from 'fs'
 import { dirname, join, relative } from 'pathe'
 import { logger } from '@nuxt/kit'
-import { createCheckerByJson } from 'vue-component-meta'
+import type { createCheckerByJson } from 'vue-component-meta'
 import { resolvePathSync } from 'mlly'
 import { hash } from 'ohash'
 import type { ComponentMetaParserOptions, NuxtComponentMeta } from '../types/parser'
 import { defu } from 'defu'
-import { refineMeta, tryResolveTypesDeclaration } from './utils'
+import { refineMeta } from './utils'
+import { tryResolveTypesDeclaration, createMetaChecker  } from './checker'
 
 export function useComponentMetaParser (
   {
@@ -63,28 +64,11 @@ export function useComponentMetaParser (
 
   let checker: ReturnType<typeof createCheckerByJson>
   const refreshChecker = () => {
-    checker = createCheckerByJson(
+    checker = createMetaChecker({
       rootDir,
-      {
-        extends: `${rootDir}/tsconfig.json`,
-        skipLibCheck: true,
-        compilerOptions: {
-          // Ensure Nuxt virtual aliases like '#build' resolve for type analysis
-          baseUrl: outputDir,
-          paths: {
-            "#build": ["."],
-            "#build/*": ["*"],
-          }
-        },
-        include: componentDirs.map((dir) => {
-          const path = typeof dir === 'string' ? dir : (dir?.path || '')
-          const ext = path.split('.').pop()!
-          return ['vue', 'ts', 'tsx', 'js', 'jsx'].includes(ext) ? path : `${path}/**/*`
-        }),
-        exclude: []
-      },
-      checkerOptions
-    )
+      checkerOptions,
+      include: componentDirs.map((dir) => typeof dir === 'string' ? dir : (dir?.path || '')),
+    })
   }
 
   const init = async () => {

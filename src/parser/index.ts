@@ -1,6 +1,6 @@
-import { createCheckerByJson } from "vue-component-meta"
 import type { ComponentMeta } from 'vue-component-meta'
-import { refineMeta, tryResolveTypesDeclaration } from "./utils"
+import { refineMeta } from "./utils"
+import { tryResolveTypesDeclaration, createMetaChecker  } from "./checker"
 import { isAbsolute, join } from "pathe"
 import { existsSync, readFileSync, writeFileSync, mkdirSync } from 'fs'
 import { withBase } from "ufo"
@@ -59,15 +59,12 @@ export function getComponentMeta(component: string, options?: Options): Componen
 function _getComponentMeta(fullPath: string, opts: Options) {
   const resolvedPath = tryResolveTypesDeclaration(fullPath)
   
-  const checker = createCheckerByJson(
-    opts.rootDir,
+  const checker = createMetaChecker(
     {
-      extends: `${opts.rootDir}/tsconfig.json`,
-      skipLibCheck: true,
-      include: [resolvedPath],
-      exclude: []
+      rootDir: opts.rootDir,
+      include: [resolvedPath]
     }
-  );
+  )
   return refineMeta(
     checker.getComponentMeta(resolvedPath)
   )

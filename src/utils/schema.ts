@@ -1,5 +1,6 @@
 import type { ComponentMeta, PropertyMetaSchema } from 'vue-component-meta'
 import type { JsonSchema } from '../types/schema'
+import { isNativeBrowserType } from '../parser/utils'
 
 /**
  * Converts Vue component props metadata to JSON Schema format
@@ -184,6 +185,17 @@ function convertVueTypeToJsonSchema(vueType: string, vueSchema: PropertyMetaSche
       nested = vs
     }
     if (nested) {
+      // Check if nested schema is empty (e.g., native types that were ignored)
+      const hasProperties = Object.keys(nested).length > 0
+      if (!hasProperties) {
+        return { 
+          type: 'object',
+          description: unwrappedType !== 'object' && unwrappedType !== 'Object' 
+            ? `Native type: ${unwrappedType}` 
+            : undefined
+        }
+      }
+      
       const properties = convertNestedSchemaToJsonSchemaProperties(nested as Record<string, any>)
       // Collect required fields
       const required = Object.entries(nested)
@@ -264,9 +276,16 @@ function convertSimpleType(type: string): any {
     case 'null':
       return { type: 'null' }
     default:
-      // For complex types, return object type as fallback
+      // return object type as fallback with the type name as description
       if (type.includes('{}') || type.includes('Object')) {
         return { type: 'object' }
+      }
+      // If it's a known native type, treat it as a simple object
+      if (isNativeBrowserType(type)) {
+        return { 
+          type: 'object',
+          description: `Native type: ${type}`
+        }
       }
       return {} // unknown types
   }

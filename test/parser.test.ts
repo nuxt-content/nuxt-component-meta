@@ -209,4 +209,18 @@ describe('ComponentMetaParser', () => {
 
     expect(jsonSchema.required).toEqual(['count'])
   })
+
+  test('should simplify native browser types', () => {
+    const meta = getComponentMeta('playground/app/components/TextDefine.vue')
+    const jsonSchema = propsToJsonSchema(meta.props)
+
+    expect(jsonSchema.properties?.canvas).toEqual({
+      type: 'object',
+      description: 'Native type: HTMLCanvasElement'
+    })
+
+    const canvasPropJSON = jsonSchema.properties?.canvas as any
+    expect(canvasPropJSON.properties).toBeUndefined()
+    expect(canvasPropJSON.required).toBeUndefined()
+  })
 })

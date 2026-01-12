@@ -1,6 +1,7 @@
 import { createCheckerByJson } from "vue-component-meta"
 import type { MetaCheckerOptions } from 'vue-component-meta'
-import { existsSync } from "fs"
+import { existsSync, readFileSync } from "fs"
+import { joinURL } from "ufo"
 
 export interface Options {
   rootDir: string
@@ -11,6 +12,18 @@ export interface Options {
 }
 
 export function createMetaChecker(opts: Options) {
+  const baseUrl = joinURL(opts.rootDir, '.nuxt');
+  let paths: Record<string, string[]> | undefined = undefined;
+  try {
+    const appTsconfig = JSON.parse(readFileSync(joinURL(baseUrl, 'tsconfig.app.json'), 'utf8'));
+    const sharedTsconfig = JSON.parse(readFileSync(joinURL(baseUrl, 'tsconfig.shared.json'), 'utf8'));
+    paths = {
+      ...appTsconfig.compilerOptions.paths,
+      ...sharedTsconfig.compilerOptions.paths,
+    }
+  } catch {
+    // Failed to load tsconfig.app.json or tsconfig.shared.json, ignore
+  }
   return createCheckerByJson(
     opts.rootDir,
     {
@@ -22,7 +35,8 @@ export function createMetaChecker(opts: Options) {
           ? tryResolveTypesDeclaration(path)
           : `${path}/**/*`
       }),
-      exclude: []
+      exclude: [],
+      ...(paths ? { compilerOptions: { baseUrl, paths } } : {})
     },
     opts.checkerOptions || {
       forceUseTs: true,

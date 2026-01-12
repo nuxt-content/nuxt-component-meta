@@ -1,6 +1,6 @@
 /**
- * JSON Deduplication - Single File TypeScript Implementation
- * Deduplicates JSON by extracting duplicate objects/arrays into const variables
+ * JSON Deduplication with String Array Optimization
+ * Stores frequently-used strings in a separate array
  */
 
 // ============================================================================
@@ -15,18 +15,27 @@ interface HashEntry {
   refName: string | null;
 }
 
+interface StringEntry {
+  value: string;
+  count: number;
+  index: number | null;
+}
+
 // ============================================================================
-// HASHER - Compute stable hashes for deduplication
+// HASHER
 // ============================================================================
 
 function fnv1aHash(str: string): string {
-  let hash = 2166136261; // FNV offset basis
+  let hash = 2166136261;
   for (let i = 0; i < str.length; i++) {
     hash ^= str.charCodeAt(i);
     hash += (hash << 1) + (hash << 4) + (hash << 7) + (hash << 8) + (hash << 24);
   }
   return (hash >>> 0).toString(36);
 }
+
+// Cache for hash computations
+const hashCache = new WeakMap<any, string>();
 
 function computeHash(value: any): string {
   const type = typeof value;
@@ -37,18 +46,32 @@ function computeHash(value: any): string {
   if (type === 'number') return `num:${value}`;
   if (type === 'string') return `str:${fnv1aHash(value)}`;
 
-  if (Array.isArray(value)) {
-    const elemHashes = value.map(item => computeHash(item));
-    return `arr:[${elemHashes.join(',')}]`;
-  }
-
+  // Check cache for objects/arrays
   if (type === 'object') {
-    const keys = Object.keys(value).sort();
-    const pairs = keys.map(key => `${key}:${computeHash(value[key])}`);
-    return `obj:{${pairs.join(',')}}`;
+    const cached = hashCache.get(value);
+    if (cached) return cached;
   }
 
-  throw new Error(`Cannot hash type: ${type}`);
+  let hash: string;
+
+  if (Array.isArray(value)) {
+    const elemHashes: string[] = [];
+    for (let i = 0; i < value.length; i++) {
+      elemHashes.push(computeHash(value[i]));
+    }
+    hash = `arr:[${elemHashes.join(',')}]`;
+  } else {
+    const keys = Object.keys(value).sort();
+    const pairs: string[] = [];
+    for (let i = 0; i < keys.length; i++) {
+      const key = keys[i];
+      pairs.push(`${key}:${computeHash(value[key])}`);
+    }
+    hash = `obj:{${pairs.join(',')}}`;
+  }
+
+  hashCache.set(value, hash);
+  return hash;
 }
 
 function deepEqual(a: any, b: any): boolean {
@@ -84,24 +107,35 @@ function deepEqual(a: any, b: any): boolean {
 }
 
 // ============================================================================
-// TRAVERSER - Traverse JSON and build hash registry
+// TRAVERSER - Collect strings and objects/arrays
 // ============================================================================
 
 function traverse(rootValue: any): {
   hashRegistry: Map<string, HashEntry>;
   valueToHash: WeakMap<any, string>;
+  stringRegistry: Map<string, StringEntry>;
 } {
   const hashRegistry = new Map<string, HashEntry>();
   const visited = new WeakMap<any, boolean>();
   const valueToHash = new WeakMap<any, string>();
+  const stringRegistry = new Map<string, StringEntry>();
 
   function visit(value: any, path: Array<string | number>): void {
+    // Track strings
+    if (typeof value === 'string') {
+      if (!stringRegistry.has(value)) {
+        stringRegistry.set(value, { value, count: 0, index: null });
+      }
+      stringRegistry.get(value)!.count++;
+      return;
+    }
+
     if (value === null || typeof value !== 'object') {
       return;
     }
 
     if (visited.has(value)) {
-      return; // Circular reference
+      return;
     }
     visited.set(value, true);
 
@@ -119,7 +153,6 @@ function traverse(rootValue: any): {
 
     const entry = hashRegistry.get(hash)!;
 
-    // Check for hash collision
     if (!deepEqual(entry.value, value)) {
       let collisionIndex = 1;
       let newHash = `${hash}_c${collisionIndex}`;
@@ -148,7 +181,6 @@ function traverse(rootValue: any): {
       valueToHash.set(value, hash);
     }
 
-    // Recurse
     if (Array.isArray(value)) {
       value.forEach((item, index) => {
         visit(item, [...path, index]);
@@ -163,7 +195,7 @@ function traverse(rootValue: any): {
   }
 
   visit(rootValue, []);
-  return { hashRegistry, valueToHash };
+  return { hashRegistry, valueToHash, stringRegistry };
 }
 
 function analyzeDependencies(
@@ -171,7 +203,7 @@ function analyzeDependencies(
   valueToHash: WeakMap<any, string>
 ): void {
   for (const [hash, entry] of hashRegistry.entries()) {
-    if (entry.count < 2) continue;
+    if (entry.count < 3) continue;
 
     const containedHashes = new Set<string>();
 
@@ -211,7 +243,7 @@ function analyzeDependencies(
     for (const containedHash of containedHashes) {
       if (containedHash === hash) continue;
       const containedEntry = hashRegistry.get(containedHash);
-      if (containedEntry && containedEntry.count >= 2) {
+      if (containedEntry && containedEntry.count >= 3) {
         entry.dependencies.add(containedHash);
       }
     }
@@ -219,12 +251,12 @@ function analyzeDependencies(
 }
 
 // ============================================================================
-// DEPENDENCY RESOLVER - Topological sort
+// DEPENDENCY RESOLVER
 // ============================================================================
 
 function topologicalSort(hashRegistry: Map<string, HashEntry>): Array<[string, HashEntry]> {
   const duplicates = Array.from(hashRegistry.entries())
-    .filter(([_, entry]) => entry.count >= 2);
+    .filter(([_, entry]) => entry.count >= 3);
 
   const graph = new Map<string, string[]>();
   const inDegree = new Map<string, number>();
@@ -266,34 +298,10 @@ function topologicalSort(hashRegistry: Map<string, HashEntry>): Array<[string, H
   }
 
   if (result.length !== duplicates.length) {
-    console.warn('Circular dependency detected, using fallback ordering');
     return duplicates;
   }
 
   return result;
-}
-
-function _deepMatchPattern(value: any, pattern: any): boolean {
-  if (typeof value !== 'object' || value === null) return false;
-  if (Array.isArray(value) !== Array.isArray(pattern)) return false;
-
-  const patternKeys = Object.keys(pattern);
-  if (Object.keys(value).length !== patternKeys.length) return false;
-
-  for (const key of patternKeys) {
-    if (!Object.prototype.hasOwnProperty.call(value, key)) return false;
-
-    const valueItem = value[key];
-    const patternItem = pattern[key];
-
-    if (typeof patternItem === 'object' && patternItem !== null) {
-      if (!_deepMatchPattern(valueItem, patternItem)) return false;
-    } else if (valueItem !== patternItem) {
-      return false;
-    }
-  }
-
-  return true;
 }
 
 function assignRefNames(sortedDuplicates: Array<[string, HashEntry]>): void {
@@ -331,7 +339,7 @@ function assignRefNames(sortedDuplicates: Array<[string, HashEntry]>): void {
 }
 
 // ============================================================================
-// CODE GENERATOR - Generate ES6 module code
+// CODE GENERATOR with String Array
 // ============================================================================
 
 const serializingValues = new WeakSet<any>();
@@ -339,7 +347,8 @@ const serializingValues = new WeakSet<any>();
 function serializeValue(
   value: any,
   valueToHash: WeakMap<any, string>,
-  hashRegistry: Map<string, HashEntry>
+  hashRegistry: Map<string, HashEntry>,
+  stringRegistry: Map<string, StringEntry>
 ): string {
   if (value === null) return 'null';
   if (value === undefined) return 'undefined';
@@ -348,7 +357,13 @@ function serializeValue(
   if (type === 'boolean' || type === 'number') {
     return String(value);
   }
+
   if (type === 'string') {
+    const stringEntry = stringRegistry.get(value);
+    if (stringEntry && stringEntry.index !== null && stringEntry.count >= 3) {
+      // Use string array reference
+      return `_s[${stringEntry.index}]`;
+    }
     return JSON.stringify(value);
   }
 
@@ -357,7 +372,7 @@ function serializeValue(
 
     if (hash && hashRegistry.has(hash)) {
       const entry = hashRegistry.get(hash)!;
-      if (entry.refName && entry.count >= 2) {
+      if (entry.refName && entry.count >= 3) {
         if (!serializingValues.has(value)) {
           return entry.refName;
         }
@@ -369,7 +384,7 @@ function serializeValue(
         return '[]';
       }
 
-      const elements = value.map(item => serializeValue(item, valueToHash, hashRegistry));
+      const elements = value.map(item => serializeValue(item, valueToHash, hashRegistry, stringRegistry));
       return '[' + elements.join(', ') + ']';
     } else {
       const keys = Object.keys(value);
@@ -378,7 +393,7 @@ function serializeValue(
       }
 
       const pairs = keys.map(key => {
-        const serializedValue = serializeValue(value[key], valueToHash, hashRegistry);
+        const serializedValue = serializeValue(value[key], valueToHash, hashRegistry, stringRegistry);
         const serializedKey = /^[a-zA-Z_$][a-zA-Z0-9_$]*$/.test(key) ? key : JSON.stringify(key);
         return `${serializedKey}: ${serializedValue}`;
       });
@@ -394,17 +409,38 @@ function generateCode(
   rootValue: any,
   valueToHash: WeakMap<any, string>,
   hashRegistry: Map<string, HashEntry>,
-  sortedDuplicates: Array<[string, HashEntry]>
+  sortedDuplicates: Array<[string, HashEntry]>,
+  stringRegistry: Map<string, StringEntry>
 ): string {
   const lines: string[] = [];
 
   lines.push('// Auto-generated deduplicated module');
-  lines.push('// Original values extracted into const declarations to reduce duplication');
+  lines.push('// Strings and objects extracted for memory efficiency');
   lines.push('');
 
+  // Generate string array if there are deduplicated strings
+  const deduplicatedStrings = Array.from(stringRegistry.values())
+    .filter(entry => entry.count >= 3)
+    .sort((a, b) => b.count - a.count); // Sort by frequency
+
+  if (deduplicatedStrings.length > 0) {
+    deduplicatedStrings.forEach((entry, index) => {
+      entry.index = index;
+    });
+
+    lines.push('const _s = [');
+    deduplicatedStrings.forEach((entry, index) => {
+      const comma = index < deduplicatedStrings.length - 1 ? ',' : '';
+      lines.push(`  ${JSON.stringify(entry.value)}${comma}`);
+    });
+    lines.push('];');
+    lines.push('');
+  }
+
+  // Generate object/array const declarations
   for (const [_, entry] of sortedDuplicates) {
     serializingValues.add(entry.value);
-    const code = serializeValue(entry.value, valueToHash, hashRegistry);
+    const code = serializeValue(entry.value, valueToHash, hashRegistry, stringRegistry);
     serializingValues.delete(entry.value);
     lines.push(`const ${entry.refName} = ${code};`);
   }
@@ -413,23 +449,20 @@ function generateCode(
     lines.push('');
   }
 
-  const rootCode = serializeValue(rootValue, valueToHash, hashRegistry);
+  const rootCode = serializeValue(rootValue, valueToHash, hashRegistry, stringRegistry);
   lines.push(`export default ${rootCode};`);
 
   return lines.join('\n');
 }
 
 // ============================================================================
-// MAIN FUNCTION - Public API
+// MAIN FUNCTION
 // ============================================================================
 
-/**
- * Deduplicate JSON string by extracting duplicate objects/arrays into const variables
- * @param jsonString - JSON string or JavaScript object (will be parsed if string)
- * @returns Deduplicated ES6 module code as string
- */
 export function deduplicateJSON(jsonString: string | object): string {
-  // Parse input
+  const debug = typeof process !== 'undefined' && process.env.DEBUG_TIMING;
+  const t0 = debug ? Date.now() : 0;
+
   let rootValue: any;
   if (typeof jsonString === 'string') {
     try {
@@ -441,31 +474,43 @@ export function deduplicateJSON(jsonString: string | object): string {
     rootValue = jsonString;
   }
 
-  // Traverse and build hash registry
-  const { hashRegistry, valueToHash } = traverse(rootValue);
+  const t1 = debug ? Date.now() : 0;
+  const { hashRegistry, valueToHash, stringRegistry } = traverse(rootValue);
+  const t2 = debug ? Date.now() : 0;
 
-  // Analyze dependencies
   analyzeDependencies(hashRegistry, valueToHash);
+  const t3 = debug ? Date.now() : 0;
 
-  // Topological sort and assign names
   const sortedDuplicates = topologicalSort(hashRegistry);
-  assignRefNames(sortedDuplicates);
+  const t4 = debug ? Date.now() : 0;
 
-  // Generate code
-  const code = generateCode(rootValue, valueToHash, hashRegistry, sortedDuplicates);
+  assignRefNames(sortedDuplicates);
+  const t5 = debug ? Date.now() : 0;
+
+  const code = generateCode(rootValue, valueToHash, hashRegistry, sortedDuplicates, stringRegistry);
+  const t6 = debug ? Date.now() : 0;
+
+  if (debug) {
+    console.log('\nTiming breakdown:');
+    console.log(`  Parse: ${t1 - t0}ms`);
+    console.log(`  Traverse: ${t2 - t1}ms`);
+    console.log(`  Analyze deps: ${t3 - t2}ms`);
+    console.log(`  Topo sort: ${t4 - t3}ms`);
+    console.log(`  Assign names: ${t5 - t4}ms`);
+    console.log(`  Generate code: ${t6 - t5}ms`);
+    console.log(`  Total: ${t6 - t0}ms`);
+  }
 
   return code;
 }
 
-/**
- * Get deduplication statistics
- * @param jsonString - JSON string or JavaScript object
- * @returns Statistics about deduplication potential
- */
 export function getDeduplicationStats(jsonString: string | object): {
   uniqueValues: number;
   deduplicatedValues: number;
   totalOccurrences: number;
+  uniqueStrings: number;
+  deduplicatedStrings: number;
+  totalStringOccurrences: number;
   estimatedSavings: string;
 } {
   let rootValue: any;
@@ -475,41 +520,21 @@ export function getDeduplicationStats(jsonString: string | object): {
     rootValue = jsonString;
   }
 
-  const { hashRegistry } = traverse(rootValue);
+  const { hashRegistry, stringRegistry } = traverse(rootValue);
 
-  const duplicates = Array.from(hashRegistry.values()).filter(entry => entry.count >= 2);
+  const duplicates = Array.from(hashRegistry.values()).filter(entry => entry.count >= 3);
   const totalOccurrences = duplicates.reduce((sum, entry) => sum + entry.count, 0);
+
+  const stringDuplicates = Array.from(stringRegistry.values()).filter(entry => entry.count >= 3);
+  const totalStringOccurrences = stringDuplicates.reduce((sum, entry) => sum + entry.count, 0);
 
   return {
     uniqueValues: hashRegistry.size,
     deduplicatedValues: duplicates.length,
     totalOccurrences,
-    estimatedSavings: `${duplicates.length} variables, ${totalOccurrences} references`
+    uniqueStrings: stringRegistry.size,
+    deduplicatedStrings: stringDuplicates.length,
+    totalStringOccurrences,
+    estimatedSavings: `${duplicates.length} object/array variables + ${stringDuplicates.length} strings, ${totalOccurrences + totalStringOccurrences} total references`
   };
 }
-
-// ============================================================================
-// EXAMPLE USAGE (commented out, for reference)
-// ============================================================================
-
-/*
-// Example 1: Simple usage
-const json = {
-  items: [
-    { id: 1, tags: [], meta: { enabled: true } },
-    { id: 2, tags: [], meta: { enabled: true } },
-    { id: 3, tags: [], meta: { enabled: false } }
-  ]
-};
-
-const dedupCode = deduplicateJSON(json);
-console.log(dedupCode);
-
-// Example 2: From JSON string
-const jsonString = JSON.stringify(json);
-const dedupCode2 = deduplicateJSON(jsonString);
-
-// Example 3: Get stats
-const stats = getDeduplicationStats(json);
-console.log(stats);
-*/

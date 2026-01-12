@@ -42,7 +42,7 @@
     "dev:generate": "nuxi generate playground",
     "dev:prepare": "nuxt-module-build build --stub && nuxi prepare playground",
     "lint": "eslint ",
-    "test": "vitest run",
+    "test": "vitest run --pool=threads",
     "verify": "pnpm dev:prepare && pnpm lint && pnpm test",
     "release": "pnpm test && release-it"
   },

@@ -9,6 +9,7 @@ import type { ComponentMetaParserOptions, NuxtComponentMeta } from '../types/par
 import { defu } from 'defu'
 import { refineMeta } from './utils'
 import { tryResolveTypesDeclaration, createMetaChecker  } from './checker'
+import { optimiseJSON } from './optimiser'
 
 export function useComponentMetaParser (
   {
@@ -119,9 +120,14 @@ export function useComponentMetaParser (
 
     if (!existsSync(dirname(path))) { fs.mkdirSync(dirname(path), { recursive: true }) }
     if (existsSync(path)) { fs.unlinkSync(path) }
+
+    content ||= getVirtualModuleContent()
+
+    content = optimiseJSON(content)
+    
     fs.writeFileSync(
       path,
-      content || getVirtualModuleContent(),
+      content,
       'utf-8'
     )
   }

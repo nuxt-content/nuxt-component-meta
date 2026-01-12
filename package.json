@@ -70,7 +70,7 @@
     "json-schema-to-zod": "^2.7.0",
     "nuxt": "^4.2.2",
     "release-it": "^19.2.3",
-    "vitest": "^4.0.16",
+    "vitest": "^4.0.17",
     "vue": "^3.5.26"
   },
   "build": {
@@ -115,7 +115,7 @@
       "vue-demi"
     ]
   },
-  "packageManager": "pnpm@10.27.0",
+  "packageManager": "pnpm@10.28.0",
   "release-it": {
     "git": {
       "commitMessage": "chore(release): release v${version}"

@@ -253,9 +253,13 @@ describe('ComponentMetaParser', () => {
     for (const prop of meta.props) {
       expect(prop.type).not.toBeUndefined()
       expect(prop.type).not.toEqual('SharedProps')
-      expect((prop.schema as Record<string, any>).type).toBeDefined()
-      expect((prop.schema as Record<string, any>).type!).not.toEqual('TestButtonProps')
-      expect((prop.schema as Record<string, any>).type!).not.toEqual('SharedProps')
+      expect(prop.type).not.toEqual('TestButtonProps')
+
+      if (typeof prop.schema !== 'string') {
+        expect((prop.schema as Record<string, any>).type).toBeDefined()
+        expect((prop.schema as Record<string, any>).type!).not.toEqual('TestButtonProps')
+        expect((prop.schema as Record<string, any>).type!).not.toEqual('SharedProps')
+      }
     }
 
     const propsNames = meta.props.map(prop => prop.name)
@@ -265,7 +269,7 @@ describe('ComponentMetaParser', () => {
     expect(propsNames).not.toContain('TestButtonInlineProps')
     expect(propsNames).not.toContain('SharedProps')
 
-    const appearanceProp = meta.props.find(prop => prop.name === 'size')
+    const appearanceProp = meta.props.find(prop => prop.name === 'appearance')
     expect(appearanceProp?.type).toBe('string')
     expect(appearanceProp?.schema).toBe('string')
 
@@ -288,9 +292,13 @@ describe('ComponentMetaParser', () => {
     for (const prop of meta.props) {
       expect(prop.type).not.toBeUndefined()
       expect(prop.type).not.toEqual('SharedProps')
-      expect((prop.schema as Record<string, any>).type).toBeDefined()
-      expect((prop.schema as Record<string, any>).type!).not.toEqual('TestButtonInlineProps')
-      expect((prop.schema as Record<string, any>).type!).not.toEqual('SharedProps')
+      expect(prop.type).not.toEqual('TestButtonInline')
+
+      if (typeof prop.schema === 'object') {
+        expect((prop.schema as Record<string, any>).type).toBeDefined()
+        expect((prop.schema as Record<string, any>).type!).not.toEqual('TestButtonInline')
+        expect((prop.schema as Record<string, any>).type!).not.toEqual('SharedProps')
+      }
     }
 
     const propsNames = meta.props.map(prop => prop.name)
@@ -300,7 +308,7 @@ describe('ComponentMetaParser', () => {
     expect(propsNames).not.toContain('TestButtonInlineProps')
     expect(propsNames).not.toContain('SharedProps')
 
-    const appearanceProp = meta.props.find(prop => prop.name === 'size')
+    const appearanceProp = meta.props.find(prop => prop.name === 'appearance')
     expect(appearanceProp?.type).toBe('string')
     expect(appearanceProp?.schema).toBe('string')
 

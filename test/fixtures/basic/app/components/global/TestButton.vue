@@ -5,10 +5,10 @@
 </template>
 
 <script lang="ts" setup>
-import type { ButtonInlineProps } from '../../../shared/types/button-inline-props'
+import type { TestButtonProps } from '#imports'
 
 const {
   size = 'medium',
   appearance = 'default',
-} = defineProps<ButtonInlineProps>()
+} = defineProps<TestButtonProps>()
 </script>

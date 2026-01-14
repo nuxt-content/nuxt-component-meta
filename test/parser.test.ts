@@ -254,8 +254,44 @@ describe('ComponentMetaParser', () => {
     expect(propsNames).toContain('appearance')
     expect(propsNames).toContain('size')
     expect(propsNames).not.toContain('TestButtonProps')
+    expect(propsNames).not.toContain('SharedProps')
+
+    const appearanceProp = meta.props.find(prop => prop.name === 'size')
+    expect(appearanceProp?.type).toBe('string')
+    expect(appearanceProp?.schema).toBe('string')
 
     const sizeProp = meta.props.find(prop => prop.name === 'size')
     expect(sizeProp?.type).toBe("\"small\" | \"medium\" | \"large\"")
+
+    expect(meta.slots).toBeDefined()
+    expect(meta.slots.length).toEqual(1)
+    const slotNames = meta.slots.map(slots => slots.name)
+    expect(slotNames).toContain('default')
+  })
+
+  test('should handle prop interfaces imported from relative imports and nuxt aliases (e.g. `#import`', async () => {
+    const meta = getComponentMeta('playground/app/components/global/TestButtonInline.vue')
+
+    expect(meta).toBeDefined()
+    expect(meta.props).toBeDefined()
+    expect(meta.props.length).toEqual(2)
+
+    const propsNames = meta.props.map(prop => prop.name)
+    expect(propsNames).toContain('appearance')
+    expect(propsNames).toContain('size')
+    expect(propsNames).not.toContain('TestButtonProps')
+    expect(propsNames).not.toContain('SharedProps')
+
+    const appearanceProp = meta.props.find(prop => prop.name === 'size')
+    expect(appearanceProp?.type).toBe('string')
+    expect(appearanceProp?.schema).toBe('string')
+
+    const sizeProp = meta.props.find(prop => prop.name === 'size')
+    expect(sizeProp?.type).toBe("\"small\" | \"medium\" | \"large\"")
+
+    expect(meta.slots).toBeDefined()
+    expect(meta.slots.length).toEqual(1)
+    const slotNames = meta.slots.map(slots => slots.name)
+    expect(slotNames).toContain('default')
   })
 })

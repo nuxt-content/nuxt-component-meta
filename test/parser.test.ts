@@ -243,17 +243,26 @@ describe('ComponentMetaParser', () => {
     })
   })
 
-  test('should handle prop interfaces imported from nuxt aliases (e.g. `#import`', async () => {
+  test('should handle prop interfaces imported from nuxt aliases (e.g. `#import`)', async () => {
     const meta = getComponentMeta('playground/app/components/global/TestButton.vue')
 
     expect(meta).toBeDefined()
     expect(meta.props).toBeDefined()
     expect(meta.props.length).toEqual(2)
 
+    for (const prop of meta.props) {
+      expect(prop.type).not.toBeUndefined()
+      expect(prop.type).not.toEqual('SharedProps')
+      expect((prop.schema as Record<string, any>).type).toBeDefined()
+      expect((prop.schema as Record<string, any>).type).not.toEqual('TestButtonProps')
+      expect((prop.schema as Record<string, any>).type).not.toEqual('SharedProps')
+    }
+
     const propsNames = meta.props.map(prop => prop.name)
     expect(propsNames).toContain('appearance')
     expect(propsNames).toContain('size')
     expect(propsNames).not.toContain('TestButtonProps')
+    expect(propsNames).not.toContain('TestButtonInlineProps')
     expect(propsNames).not.toContain('SharedProps')
 
     const appearanceProp = meta.props.find(prop => prop.name === 'size')
@@ -269,17 +278,26 @@ describe('ComponentMetaParser', () => {
     expect(slotNames).toContain('default')
   })
 
-  test('should handle prop interfaces imported from relative imports and nuxt aliases (e.g. `#import`', async () => {
+  test('should handle prop interfaces imported from relative imports and nuxt aliases (e.g. `#import`)', async () => {
     const meta = getComponentMeta('playground/app/components/global/TestButtonInline.vue')
 
     expect(meta).toBeDefined()
     expect(meta.props).toBeDefined()
     expect(meta.props.length).toEqual(2)
 
+    for (const prop of meta.props) {
+      expect(prop.type).not.toBeUndefined()
+      expect(prop.type).not.toEqual('SharedProps')
+      expect((prop.schema as Record<string, any>).type).toBeDefined()
+      expect((prop.schema as Record<string, any>).type).not.toEqual('TestButtonInlineProps')
+      expect((prop.schema as Record<string, any>).type).not.toEqual('SharedProps')
+    }
+
     const propsNames = meta.props.map(prop => prop.name)
     expect(propsNames).toContain('appearance')
     expect(propsNames).toContain('size')
     expect(propsNames).not.toContain('TestButtonProps')
+    expect(propsNames).not.toContain('TestButtonInlineProps')
     expect(propsNames).not.toContain('SharedProps')
 
     const appearanceProp = meta.props.find(prop => prop.name === 'size')

@@ -42,7 +42,8 @@
     "dev:generate": "nuxi generate playground",
     "dev:prepare": "nuxt-module-build build --stub && nuxi prepare playground",
     "lint": "eslint ",
-    "test": "vitest run --pool=threads",
+    "test": "vitest run",
+    "test:ui": "vitest --ui",
     "verify": "pnpm dev:prepare && pnpm lint && pnpm test",
     "release": "pnpm test && release-it"
   },
@@ -63,6 +64,7 @@
     "@nuxt/module-builder": "^1.0.2",
     "@nuxt/test-utils": "^3.23.0",
     "@nuxtjs/eslint-config-typescript": "^12.1.0",
+    "@vitest/ui": "^4.0.17",
     "ajv": "^8.17.1",
     "changelogen": "^0.6.2",
     "eslint": "^9.39.2",

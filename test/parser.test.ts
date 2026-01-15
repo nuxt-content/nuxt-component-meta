@@ -143,7 +143,7 @@ describe('ComponentMetaParser', () => {
         properties: {
           name: { type: 'string' },
           email: { type: 'string' },
-          role: { 
+          role: {
             type: 'string',
             enum: ['admin', 'user', 'guest']
           }
@@ -178,16 +178,16 @@ describe('ComponentMetaParser', () => {
   test('forceUseTs option should work with TypeScript components', () => {
     // This test verifies that TypeScript-only features work
     const meta = getComponentMeta('playground/app/components/TestInterfaceArray.vue')
-    
+
     // Should successfully parse TypeScript interface definitions
     expect(meta.props).toBeDefined()
     expect(meta.props.length).toBeGreaterThan(0)
-    
+
     // Verify it can extract interface types
     const authorsProp = meta.props.find(p => p.name === 'authors')
     expect(authorsProp).toBeDefined()
     expect(authorsProp?.type).toContain('Author[]')
-    
+
     const booksProp = meta.props.find(p => p.name === 'books')
     expect(booksProp).toBeDefined()
     expect(booksProp?.type).toContain('Book[]')
@@ -241,5 +241,83 @@ describe('ComponentMetaParser', () => {
         }
       ]
     })
+  })
+
+  test('should handle prop interfaces imported from nuxt aliases (e.g. `#import`)', async () => {
+    const meta = getComponentMeta('playground/app/components/global/TestButton.vue')
+
+    expect(meta).toBeDefined()
+    expect(meta.props).toBeDefined()
+    expect(meta.props.length).toEqual(2)
+
+    for (const prop of meta.props) {
+      expect(prop.type).not.toBeUndefined()
+      expect(prop.type).not.toEqual('SharedProps')
+      expect(prop.type).not.toEqual('TestButtonProps')
+
+      if (typeof prop.schema !== 'string') {
+        expect((prop.schema as Record<string, any>).type).toBeDefined()
+        expect((prop.schema as Record<string, any>).type!).not.toEqual('TestButtonProps')
+        expect((prop.schema as Record<string, any>).type!).not.toEqual('SharedProps')
+      }
+    }
+
+    const propsNames = meta.props.map(prop => prop.name)
+    expect(propsNames).toContain('appearance')
+    expect(propsNames).toContain('size')
+    expect(propsNames).not.toContain('TestButtonProps')
+    expect(propsNames).not.toContain('TestButtonInlineProps')
+    expect(propsNames).not.toContain('SharedProps')
+
+    const appearanceProp = meta.props.find(prop => prop.name === 'appearance')
+    expect(appearanceProp?.type).toBe('string')
+    expect(appearanceProp?.schema).toBe('string')
+
+    const sizeProp = meta.props.find(prop => prop.name === 'size')
+    expect(sizeProp?.type).toBe("\"small\" | \"medium\" | \"large\"")
+
+    expect(meta.slots).toBeDefined()
+    expect(meta.slots.length).toEqual(1)
+    const slotNames = meta.slots.map(slots => slots.name)
+    expect(slotNames).toContain('default')
+  })
+
+  test('should handle prop interfaces imported from relative imports and nuxt aliases (e.g. `#import`)', async () => {
+    const meta = getComponentMeta('playground/app/components/global/TestButtonInline.vue')
+
+    expect(meta).toBeDefined()
+    expect(meta.props).toBeDefined()
+    expect(meta.props.length).toEqual(2)
+
+    for (const prop of meta.props) {
+      expect(prop.type).not.toBeUndefined()
+      expect(prop.type).not.toEqual('SharedProps')
+      expect(prop.type).not.toEqual('TestButtonInline')
+
+      if (typeof prop.schema === 'object') {
+        expect((prop.schema as Record<string, any>).type).toBeDefined()
+        expect((prop.schema as Record<string, any>).type!).not.toEqual('TestButtonInline')
+        expect((prop.schema as Record<string, any>).type!).not.toEqual('SharedProps')
+      }
+    }
+
+    const propsNames = meta.props.map(prop => prop.name)
+    expect(propsNames).toContain('appearance')
+    expect(propsNames).toContain('size')
+    expect(propsNames).not.toContain('TestButtonProps')
+    expect(propsNames).not.toContain('TestButtonInlineProps')
+    expect(propsNames).not.toContain('SharedProps')
+
+    const appearanceProp = meta.props.find(prop => prop.name === 'appearance')
+    expect(appearanceProp?.type).toBe('string')
+    expect(appearanceProp?.schema).toBe('string')
+
+    const sizeProp = meta.props.find(prop => prop.name === 'size')
+    expect(sizeProp?.type).toBe("\"small\" | \"medium\" | \"large\"")
+
+    expect(meta.slots).toBeDefined()
+    expect(meta.slots.length).toEqual(1)
+    const slotNames = meta.slots.map(slots => slots.name)
+    expect(slotNames).toContain('default')
   })
 })

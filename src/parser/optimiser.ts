@@ -8,7 +8,10 @@ export function optimiseJSON(content: string): string {
       return content
     }
 
-    const jsonString = content.substring('export default '.length)
+    let jsonString = content.substring('export default '.length)
+    if (jsonString.endsWith(';')) {
+      jsonString = jsonString.substring(0, jsonString.length - 1)
+    }
     const data = JSON.parse(jsonString) as NuxtComponentMeta
 
     const result = deduplicateJSON(data)

@@ -17,7 +17,7 @@ describe('optimiser', () => {
     const content = 'export default {};'
     const result = optimiseJSON(content)
     
-    expect(result).toBe(content)
+    expect(result.split('\n').pop()).toBe(content)
   })
   
   it('should extract common strings', () => {

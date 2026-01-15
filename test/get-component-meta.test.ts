@@ -38,4 +38,31 @@ describe("get-component-meta", () => {
     expect(meta.props.length).toEqual(4);
     expect((meta as unknown as Record<string, unknown>).cachedAt).toBeDefined();
   });
+
+  test("parse NormalScript with transformers (and cache)", { timeout: 10000 }, () => {
+    const meta = getComponentMeta("app/components/NormalScript.vue", {
+      rootDir,
+      cache: true,
+      transformers: [
+        (component, code) => {
+          // Rename a prop in the options API to ensure transformed code is used.
+          return { component, code: code.replace('alt:', 'title:') }
+        }
+      ]
+    })
+
+    const propNames = meta.props.map(p => p.name)
+    expect(propNames).toContain('title')
+    expect(propNames).not.toContain('alt')
+
+    // Second call should hit cache with the same transformer-generated hash
+    const metaCached = getComponentMeta("app/components/NormalScript.vue", {
+      rootDir,
+      cache: true,
+      transformers: [
+        (component, code) => ({ component, code: code.replace('alt:', 'title:') })
+      ]
+    })
+    expect((metaCached as unknown as Record<string, unknown>).cachedAt).toBeDefined();
+  });
 });

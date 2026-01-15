@@ -1,6 +1,7 @@
 import { describe, test, expect } from 'vitest'
 import { getComponentMeta } from '../src/parser'
 import { propsToJsonSchema } from '../src/utils/schema'
+import path from 'path'
 
 describe('ComponentMetaParser', () => {
   test('should be able to fetch component meta', async () => {
@@ -244,7 +245,9 @@ describe('ComponentMetaParser', () => {
   })
 
   test('should handle prop interfaces imported from nuxt aliases (e.g. `#import`)', async () => {
-    const meta = getComponentMeta('playground/app/components/global/TestButton.vue')
+    const meta = getComponentMeta('app/components/global/TestButton.vue', {
+      rootDir: path.join(process.cwd(), 'playground')
+    })
 
     expect(meta).toBeDefined()
     expect(meta.props).toBeDefined()
@@ -283,7 +286,9 @@ describe('ComponentMetaParser', () => {
   })
 
   test('should handle prop interfaces imported from relative imports and nuxt aliases (e.g. `#import`)', async () => {
-    const meta = getComponentMeta('playground/app/components/global/TestButtonInline.vue')
+    const meta = getComponentMeta('app/components/global/TestButtonInline.vue', {
+      rootDir: path.join(process.cwd(), 'playground')
+    })
 
     expect(meta).toBeDefined()
     expect(meta.props).toBeDefined()

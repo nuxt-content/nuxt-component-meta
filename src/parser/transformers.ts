@@ -56,7 +56,7 @@ export const defaultTransformers: ComponentMetaTransformer[] = [
       code = [
         `${head}`,
         `export default {} as (import("vue").DefineComponent<${generic}>${extend});`
-      ].join('\n')
+      ].join('\n').replace('export default _default;', '')
     }
 
     return { component, code }

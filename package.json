@@ -62,7 +62,7 @@
     "@nuxt/content": "^3.10.0",
     "@nuxt/eslint-config": "^1.12.1",
     "@nuxt/module-builder": "^1.0.2",
-    "@nuxt/test-utils": "^3.23.0",
+    "@nuxt/test-utils": "^4.0.0",
     "@nuxtjs/eslint-config-typescript": "^12.1.0",
     "@vitest/ui": "^4.0.17",
     "ajv": "^8.17.1",

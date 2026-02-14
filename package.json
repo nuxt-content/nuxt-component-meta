@@ -49,31 +49,31 @@
   },
   "dependencies": {
     "@nuxt/kit": "^4.2.2",
-    "citty": "^0.1.6",
+    "citty": "^0.2.1",
     "mlly": "^1.8.0",
     "ohash": "^2.0.11",
     "scule": "^1.3.0",
     "typescript": "^5.9.3",
-    "ufo": "^1.6.2",
-    "vue-component-meta": "^3.2.2"
+    "ufo": "^1.6.3",
+    "vue-component-meta": "^3.2.4"
   },
   "devDependencies": {
     "@iconify/vue": "^5.0.0",
-    "@nuxt/content": "^3.10.0",
-    "@nuxt/eslint-config": "^1.12.1",
+    "@nuxt/content": "^3.11.2",
+    "@nuxt/eslint-config": "^1.15.1",
     "@nuxt/module-builder": "^1.0.2",
     "@nuxt/test-utils": "^3.23.0",
     "@nuxtjs/eslint-config-typescript": "^12.1.0",
-    "@vitest/ui": "^4.0.17",
-    "ajv": "^8.17.1",
+    "@vitest/ui": "^4.0.18",
+    "ajv": "^8.18.0",
     "changelogen": "^0.6.2",
     "eslint": "^9.39.2",
     "jiti": "^2.6.1",
     "json-schema-to-zod": "^2.7.0",
     "nuxt": "^4.2.2",
-    "release-it": "^19.2.3",
-    "vitest": "^4.0.17",
-    "vue": "^3.5.26"
+    "release-it": "^19.2.4",
+    "vitest": "^4.0.18",
+    "vue": "^3.5.28"
   },
   "build": {
     "entries": [
@@ -117,7 +117,7 @@
       "vue-demi"
     ]
   },
-  "packageManager": "pnpm@10.28.0",
+  "packageManager": "pnpm@10.29.3",
   "release-it": {
     "git": {
       "commitMessage": "chore(release): release v${version}"

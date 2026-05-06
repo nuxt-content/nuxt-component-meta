@@ -66,7 +66,6 @@ export function extractMacroMeta(
       const argSource = content.slice(args[0].start, args[0].end)
       let extracted: Record<string, any>
       try {
-        // eslint-disable-next-line no-new-func
         extracted = new Function(`return (${argSource})`)()
       } catch {
         return

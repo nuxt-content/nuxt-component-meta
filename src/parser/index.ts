@@ -2,10 +2,13 @@ import type { ComponentMeta } from 'vue-component-meta'
 import { refineMeta } from "./utils"
 import { tryResolveTypesDeclaration, createMetaChecker  } from "./checker"
 import { defaultTransformers, type ComponentMetaTransformer } from './transformers'
+import { extractMacroMeta } from './macro-extractor'
 import { isAbsolute, join } from "pathe"
 import { existsSync, readFileSync, writeFileSync, mkdirSync } from 'fs'
 import { withBase } from "ufo"
 import { hash } from "crypto"
+import { defu } from 'defu'
+import type { ExtendMetaFunction } from '../types/module'
 
 export interface Options {
   rootDir: string
@@ -15,6 +18,11 @@ export interface Options {
    * Extra transformers to be run on top of component code before parsing.
    */
   transformers?: ComponentMetaTransformer[]
+  /**
+   * Register compiler macro functions that inject custom metadata into components.
+   * @default [{ name: 'extendComponentMeta' }]
+   */
+  extendMetaFunctions?: ExtendMetaFunction[]
 }
 
 export function getComponentMeta(component: string, options?: Options): ComponentMeta {
@@ -61,6 +69,12 @@ export function getComponentMeta(component: string, options?: Options): Componen
   }
 
   const componentMeta = _getComponentMeta(resolvedPath, code, opts)
+
+  const macros = opts.extendMetaFunctions ?? [{ name: 'extendComponentMeta' }]
+  const macroResults = extractMacroMeta(code, macros, resolvedPath)
+  for (const result of macroResults) {
+    Object.assign(componentMeta, defu(componentMeta, result))
+  }
 
   if (cachePath) {
     const cache = JSON.stringify({ cachedAt: Date.now(), ...componentMeta })

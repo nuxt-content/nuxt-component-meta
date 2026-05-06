@@ -8,6 +8,7 @@ import { hash } from 'ohash'
 import type { ComponentMetaParserOptions, NuxtComponentMeta } from '../types/parser'
 import { defu } from 'defu'
 import { refineMeta } from './utils'
+import { extractMacroMeta } from './macro-extractor'
 import { tryResolveTypesDeclaration, createMetaChecker  } from './checker'
 import { optimiseJSON } from './optimiser'
 
@@ -21,6 +22,7 @@ export function useComponentMetaParser (
     exclude = [],
     overrides = {},
     transformers = [],
+    extendMetaFunctions = [{ name: 'extendComponentMeta' }],
     debug = false,
     metaFields,
     metaSources = {},
@@ -206,9 +208,10 @@ export function useComponentMetaParser (
         }
       )
 
-      const extendComponentMetaMatch = code.match(/extendComponentMeta\((\{[\s\S]*?\})\)/);
-      const extendedComponentMeta =  extendComponentMetaMatch?.length ? eval(`(${extendComponentMetaMatch[1]})`) : null
-      component.meta = defu(component.meta, extendedComponentMeta)
+      const macroResults = extractMacroMeta(code, extendMetaFunctions, resolvedPath)
+      for (const result of macroResults) {
+        component.meta = defu(component.meta, result)
+      }
 
       components[component.pascalName] = component
     } catch {

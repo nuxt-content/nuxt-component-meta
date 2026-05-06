@@ -81,4 +81,9 @@ describe('fixtures:basic', async () => {
     const component = await $fetch('/api/component-meta/TestComponent')
     expect(component.meta).toMatchObject({ hello: 'world', foo: 'bar' })
   })
+
+  test('Test extendProps with transform', async () => {
+    const component = await $fetch('/api/component-meta/TestExtendProps')
+    expect(component.meta._studio).toMatchObject({ filePath: 'file-picker' })
+  })
 })

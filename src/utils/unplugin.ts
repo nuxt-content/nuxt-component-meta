@@ -2,6 +2,7 @@ import { createUnplugin } from 'unplugin'
 import { useComponentMetaParser } from '../parser/meta-parser'
 import type { ComponentMetaParser } from '../parser/meta-parser'
 import type { ComponentMetaParserOptions } from '../types/parser'
+import { stripMacroCalls } from '../parser/macro-extractor'
 
 type ComponentMetaUnpluginOptions = { parser?: ComponentMetaParser, parserOptions: ComponentMetaParserOptions }
 
@@ -10,9 +11,20 @@ export const metaPlugin = createUnplugin<ComponentMetaUnpluginOptions>(({ parser
     let instance = parser || useComponentMetaParser(parserOptions)
     let _configResolved: any
 
+    const macroNames = (parserOptions.extendMetaFunctions || [{ name: 'extendComponentMeta' }]).map(f => f.name)
+
     return {
       name: 'vite-plugin-nuxt-component-meta',
       enforce: 'post',
+      transformInclude (id: string) {
+        return /\.(vue|ts|js|tsx|jsx)(\?|$)/.test(id)
+      },
+      transform (code: string, id: string) {
+        if (!macroNames.some(name => code.includes(name))) return
+        // Strip query params from id for filename passed to oxc
+        const filename = id.split('?')[0]!
+        return stripMacroCalls(code, macroNames, filename)
+      },
       async buildStart () {
         // avoid parsing meta twice in SSR
         if (_configResolved?.build.ssr) {

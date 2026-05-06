@@ -66,7 +66,8 @@ export default defineNuxtModule<ModuleOptions>({
         ]
       }
     },
-    globalsOnly: false
+    globalsOnly: false,
+    extendMetaFunctions: [{ name: 'extendComponentMeta' }]
   }),
   async setup (options, nuxt) {
     const resolver = createResolver(import.meta.url)
@@ -171,7 +172,11 @@ export default defineNuxtModule<ModuleOptions>({
         }`,
         'export type NuxtComponentMeta = Record<NuxtComponentMetaNames, ComponentData>',
         'declare const components: NuxtComponentMeta',
-        'export { components as default, components }'
+        'export { components as default, components }',
+        // Generate global type declarations for custom macro names so they resolve without an import
+        ...(options.extendMetaFunctions || [])
+          .filter(f => f.name !== 'extendComponentMeta')
+          .map(f => `declare function ${f.name}(meta: Record<string, any>): void`)
       ].join('\n'),
       write: true
     })

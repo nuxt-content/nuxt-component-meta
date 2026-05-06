@@ -69,10 +69,10 @@ function buildEvalModule(content: string, argNode: any): string {
 }
 
 /**
- * Evaluate a macro argument ObjectExpression to a plain JS object.
- * Returns undefined if evaluation fails or the result is not a plain object.
+ * Evaluate a macro argument (ObjectExpression or ArrayExpression) to a plain JS value.
+ * Returns undefined if evaluation fails or the result is not a plain object/array.
  */
-function evaluateMacroArgument(content: string, argNode: any, filename: string): Record<string, any> | undefined {
+function evaluateMacroArgument(content: string, argNode: any, filename: string): Record<string, any> | any[] | undefined {
   const moduleSource = buildEvalModule(content, argNode)
 
   try {
@@ -81,15 +81,19 @@ function evaluateMacroArgument(content: string, argNode: any, filename: string):
 
     // Handle ESM default export interop
     const value = (result as any)?.default ?? result
-    if (!value || typeof value !== 'object' || Array.isArray(value)) return undefined
+    if (value === null || value === undefined) return undefined
+
+    // Accept arrays
+    if (Array.isArray(value)) return value as any[]
+
+    if (typeof value !== 'object') return undefined
 
     // Reject non-plain objects (class instances, etc.)
     const proto = Object.getPrototypeOf(value)
     if (proto !== Object.prototype && proto !== null) return undefined
 
     return value as Record<string, any>
-  }
-  catch {
+  } catch {
     return undefined
   }
 }
@@ -118,8 +122,7 @@ export function extractMacroMeta(
   let program: any
   try {
     program = parseSync(parseFilename, content).program
-  }
-  catch {
+  } catch {
     return []
   }
 
@@ -137,13 +140,22 @@ export function extractMacroMeta(
       if (!macroNames.has(macroName)) return
 
       const args = node.expression.arguments
-      if (!args.length || args[0].type !== 'ObjectExpression') return
+      if (!args.length) return
+      const argType = args[0].type
+      if (argType !== 'ObjectExpression' && argType !== 'ArrayExpression') return
 
       const extracted = evaluateMacroArgument(content, args[0], parseFilename)
       if (!extracted) return
 
       const macro = macros.find(m => m.name === macroName)!
-      results.push(macro.transform ? macro.transform(extracted) : extracted)
+
+      if (Array.isArray(extracted)) {
+        // Arrays require a transform to produce a mergeable object — skip if none configured
+        if (!macro.transform) return
+        results.push(macro.transform(extracted))
+      } else {
+        results.push(macro.transform ? macro.transform(extracted) : extracted)
+      }
     }
   })
 
@@ -165,8 +177,7 @@ export function stripMacroCalls(
   let program: any
   try {
     program = parseSync(filename, code).program
-  }
-  catch {
+  } catch {
     return undefined
   }
 

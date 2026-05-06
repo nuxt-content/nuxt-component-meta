@@ -14,7 +14,7 @@ export interface ExtendMetaFunction {
    * // extendProps({ filePath: 'file-picker' }) → { _studio: { filePath: 'file-picker' } }
    * transform: (extracted) => ({ _studio: extracted })
    */
-  transform?: (extracted: Record<string, any>) => Record<string, any>
+  transform?: (extracted: Record<string, any> | any[]) => Record<string, any>
 }
 
 export interface ModuleOptions {

@@ -11,6 +11,9 @@ importers:
       '@nuxt/kit':
         specifier: ^4.2.2
         version: 4.2.2(magicast@0.5.1)
+      '@vue/compiler-sfc':
+        specifier: ^3.5.26
+        version: 3.5.26
       citty:
         specifier: ^0.1.6
         version: 0.1.6

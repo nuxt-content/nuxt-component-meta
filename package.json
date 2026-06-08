@@ -43,13 +43,13 @@
     "dev:prepare": "nuxt-module-build build --stub && nuxi prepare playground",
     "lint": "eslint ",
     "test": "vitest run",
+    "test:bench": "vitest bench",
     "test:ui": "vitest --ui",
     "verify": "pnpm dev:prepare && pnpm lint && pnpm test",
     "release": "pnpm test && release-it"
   },
   "dependencies": {
     "@nuxt/kit": "^4.2.2",
-    "@vue/compiler-sfc": "^3.5.26",
     "citty": "^0.1.6",
     "jiti": "^2.6.1",
     "mlly": "^1.8.0",

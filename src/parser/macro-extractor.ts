@@ -3,8 +3,9 @@ import { walk, isBindingIdentifier } from 'oxc-walker'
 import MagicString from 'magic-string'
 import { createJiti } from 'jiti'
 import { findStaticImports, parseStaticImport } from 'mlly'
-import { parse as parseSfc } from '@vue/compiler-sfc'
 import type { ExtendMetaFunction } from '../types/module'
+
+const SCRIPT_BLOCK_RE = /<script\b[^>]*>([\s\S]*?)<\/script>/gi
 
 /**
  * For .vue files, extract and concatenate all script block contents
@@ -13,10 +14,13 @@ import type { ExtendMetaFunction } from '../types/module'
  */
 function extractScriptContent(code: string, filename: string): string {
   if (!filename.endsWith('.vue')) return code
-  const { descriptor } = parseSfc(code, { filename, ignoreEmpty: false })
-  return [descriptor.script?.content, descriptor.scriptSetup?.content]
-    .filter(Boolean)
-    .join('\n')
+  const blocks: string[] = []
+  let match: RegExpExecArray | null
+  SCRIPT_BLOCK_RE.lastIndex = 0
+  while ((match = SCRIPT_BLOCK_RE.exec(code))) {
+    blocks.push(match[1]!)
+  }
+  return blocks.join('\n')
 }
 
 /**

@@ -10,6 +10,15 @@
 
     <pre>{{ specificComponentMeta }}</pre>
 
+    <h2><code>extendMetaFunctions</code> compiler macros (<code>FilePicker</code>)</h2>
+
+    <p>
+      <code>extendComponentMeta</code> resolves an imported const ref, and the custom
+      <code>extendStudioInput</code> macro is wrapped under <code>_studio</code>:
+    </p>
+
+    <pre>{{ filePickerMeta?.meta }}</pre>
+
     <h2>Components from <code>useComponentMeta</code></h2>
 
     <pre>{{ composableData }}</pre>
@@ -26,6 +35,8 @@ import type { NuxtComponentMetaNames } from '#nuxt-component-meta/types'
 const specificComponentName = ref<NuxtComponentMetaNames>('TestContent')
 
 const specificComponentMeta = await useComponentMeta(specificComponentName)
+
+const filePickerMeta = await useComponentMeta('FilePicker' as NuxtComponentMetaNames)
 
 const composableData = await useComponentMeta()
 </script>

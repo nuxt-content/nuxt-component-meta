@@ -23,6 +23,10 @@ export default defineNuxtConfig({
   componentMeta: {
     debug: 2,
     exclude: [/node_modules/i],
+    extendMetaFunctions: [
+      { name: 'extendComponentMeta' },
+      { name: 'extendStudioInput', transform: extracted => ({ _studio: extracted }) }
+    ],
     overrides: {
       TestComponent: {
         props: {

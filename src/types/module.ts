@@ -3,6 +3,20 @@ import type { ComponentsDir, ComponentsOptions } from '@nuxt/schema'
 import type { TransformersHookData, ExtendHookData, NuxtComponentMeta } from '.'
 import type { JsonSchema } from './schema'
 
+export interface ExtendMetaFunction {
+  /** The function name to recognize as a compiler macro */
+  name: string
+  /**
+   * Optional transform applied to the extracted object before merging into component.meta.
+   * Use this to wrap the argument under a namespace key.
+   *
+   * @example
+   * // extendProps({ filePath: 'file-picker' }) → { _studio: { filePath: 'file-picker' } }
+   * transform: (extracted) => ({ _studio: extracted })
+   */
+  transform?: (extracted: Record<string, any> | any[]) => Record<string, any>
+}
+
 export interface ModuleOptions {
   /**
    * Directory where files metas are outputed upon parsing.
@@ -93,6 +107,22 @@ export interface ModuleOptions {
    * It can be a path to a file exporting a default object of components definitions or an object of components definitions.
    */
   metaSources?: (string | Partial<NuxtComponentMeta>)[]
+  /**
+   * Register compiler macro functions that inject custom metadata into components.
+   * Each entry defines a function name and an optional transform hook applied to the extracted argument.
+   *
+   * Calls are stripped from browser output (no runtime cost) and extracted at build time via AST parsing.
+   * Macro arguments can be static object/array literals and may reference imported constants.
+   *
+   * @default [{ name: 'extendComponentMeta' }]
+   *
+   * @example
+   * extendMetaFunctions: [
+   *   { name: 'extendComponentMeta' },
+   *   { name: 'extendProps', transform: (extracted) => ({ _studio: extracted }) }
+   * ]
+   */
+  extendMetaFunctions?: ExtendMetaFunction[]
 }
 
 export interface ModuleHooks {

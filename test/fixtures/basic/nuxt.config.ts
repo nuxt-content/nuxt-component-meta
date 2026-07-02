@@ -13,5 +13,11 @@ export default defineNuxtConfig({
   },
   modules: [
     nuxtMetaModule
-  ]
+  ],
+  componentMeta: {
+    extendMetaFunctions: [
+      { name: 'extendComponentMeta' },
+      { name: 'extendProps', transform: (extracted: Record<string, any>) => ({ _studio: extracted }) }
+    ]
+  }
 })

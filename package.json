@@ -124,7 +124,7 @@
       "vue-demi"
     ]
   },
-  "packageManager": "pnpm@10.28.0",
+  "packageManager": "pnpm@11.12.0",
   "release-it": {
     "git": {
       "commitMessage": "chore(release): release v${version}"

@@ -73,7 +73,7 @@
     "eslint": "^9.39.5",
     "json-schema-to-zod": "^2.8.1",
     "nuxt": "^4.4.8",
-    "release-it": "^19.2.4",
+    "release-it": "^20.2.1",
     "vitest": "^4.1.10",
     "vue": "^3.5.39"
   },

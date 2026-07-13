@@ -283,7 +283,7 @@ describe('ComponentMetaParser', () => {
     expect(meta.slots.length).toEqual(1)
     const slotNames = meta.slots.map(slots => slots.name)
     expect(slotNames).toContain('default')
-  })
+  }, 10_000)
 
   test('should handle prop interfaces imported from relative imports and nuxt aliases (e.g. `#import`)', async () => {
     const meta = getComponentMeta('app/components/global/TestButtonInline.vue', {

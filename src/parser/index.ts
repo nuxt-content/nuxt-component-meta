@@ -47,7 +47,7 @@ export function getComponentMeta(component: string, options?: Options): Componen
   try {
     code = readFileSync(resolvedPath, { encoding: 'utf8', flag: 'r' })
   } catch (error) {
-    throw new Error(`Error reading file ${resolvedPath}: ${error}`)
+    throw new Error(`Error reading file ${resolvedPath}: ${error}`, { cause: error })
   }
 
   if (opts.transformers.length) {

@@ -25,7 +25,8 @@ export const loadKit = async (
   } catch (e: any) {
     if (e.toString().includes("Cannot find module '@nuxt/kit'")) {
       throw new Error(
-        'nuxi requires `@nuxt/kit` to be installed in your project. Try installing `nuxt` v3 or `@nuxt/bridge` first.'
+        'nuxi requires `@nuxt/kit` to be installed in your project. Try installing `nuxt` v3 or `@nuxt/bridge` first.',
+        { cause: e }
       )
     }
     throw e

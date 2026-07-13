@@ -468,7 +468,7 @@ export function deduplicateJSON(jsonString: string | object): string {
     try {
       rootValue = JSON.parse(jsonString);
     } catch (error) {
-      throw new Error(`Invalid JSON: ${(error as Error).message}`);
+      throw new Error(`Invalid JSON: ${(error as Error).message}`, { cause: error });
     }
   } else {
     rootValue = jsonString;

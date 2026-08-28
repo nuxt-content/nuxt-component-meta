@@ -35,11 +35,20 @@ export function useComponentMetaParser (
   let components: NuxtComponentMeta = { ...metaSources }
   const outputPath = join(outputDir, 'component-meta')
 
+  const tryResolveComponentPath = (filePath: string) => {
+    try {
+      return resolvePathSync(filePath, { extensions: ['.vue', '.ts', '.mts', '.tsx', '.js', '.mjs', '.jsx'] })
+    } catch {
+      // An unresolvable path means the component is absent, not that the build should fail
+      return existsSync(filePath) ? filePath : undefined
+    }
+  }
+
   const isExcluded = (component: any) => {
     return exclude.find((excludeRule) => {
       switch (typeof excludeRule) {
         case 'string':
-          return component.filePath.includes(excludeRule)
+          return component.pascalName === excludeRule || component.filePath.includes(excludeRule)
         case 'object':
           return excludeRule instanceof RegExp ? excludeRule.test(component.filePath) : false
         case 'function':
@@ -82,7 +91,8 @@ export function useComponentMetaParser (
       if (isExcluded(component)) { continue }
       if (!component.filePath || !component.pascalName) { continue }
 
-      const filePath = resolvePathSync(component.filePath)
+      const filePath = tryResolveComponentPath(component.filePath)
+      if (!filePath) { continue }
 
       components[component.pascalName] = {
         ...component,

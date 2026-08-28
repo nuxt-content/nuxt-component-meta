@@ -32,16 +32,17 @@ export default defineNuxtModule<ModuleOptions>({
     metaSources: [],
     silent: true,
     exclude: [
-      'nuxt/dist/app/components/welcome',
-      'nuxt/dist/app/components/client-only',
-      'nuxt/dist/app/components/dev-only',
+      // Built-in file paths live in whichever package provides `appDir` (`nuxt`, `nuxt-nightly`, ...)
+      'NuxtWelcome',
+      'ClientOnly',
+      'DevOnly',
+      'NuxtLayout',
+      'NuxtErrorBoundary',
+      'ServerPlaceholder',
+      'NuxtLoadingIndicator',
+      'NuxtRouteAnnouncer',
       '@nuxtjs/mdc/dist/runtime/components/MDC',
-      'nuxt/dist/app/components/nuxt-layout',
-      'nuxt/dist/app/components/nuxt-error-boundary',
-      'nuxt/dist/app/components/server-placeholder',
-      'nuxt/dist/app/components/nuxt-loading-indicator',
-      'nuxt/dist/app/components/nuxt-route-announcer',
-      'nuxt/dist/app/components/nuxt-stubs',
+      'app/components/nuxt-stubs',
       (component) => component.filePath.endsWith('.svg')
         // exclude d.vue.ts files, main vue files are already included and we don't need to include the d.vue.ts files
         || component.filePath.endsWith('.d.vue.ts')

@@ -52,7 +52,7 @@
     "citty": "^0.2.2",
     "defu": "^6.1.7",
     "jiti": "^2.7.0",
-    "magic-string": "^0.30.21",
+    "magic-string": "^1.2.3",
     "mlly": "^1.8.2",
     "ohash": "^2.0.11",
     "oxc-parser": "^0.139.0",

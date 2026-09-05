@@ -54,32 +54,32 @@
     "jiti": "^2.7.0",
     "magic-string": "^0.30.21",
     "mlly": "^1.8.2",
-    "ohash": "^2.0.11",
-    "oxc-parser": "^0.139.0",
-    "oxc-walker": "^1.0.0",
+    "ohash": "^2.0.12",
+    "oxc-parser": "^0.148.0",
+    "oxc-walker": "^1.1.1",
     "pathe": "^2.0.3",
     "scule": "^1.3.0",
     "unplugin": "^2.3.11",
     "typescript": "^5.9.3",
     "ufo": "^1.6.4",
-    "vue-component-meta": "^3.3.7"
+    "vue-component-meta": "^3.3.11"
   },
   "devDependencies": {
     "@iconify/vue": "^5.0.1",
-    "@nuxt/content": "^3.15.0",
-    "@nuxt/eslint-config": "^1.16.0",
-    "@nuxt/module-builder": "^1.0.2",
-    "@nuxt/test-utils": "^4.0.3",
+    "@nuxt/content": "^3.16.0",
+    "@nuxt/eslint-config": "^1.17.0",
+    "@nuxt/module-builder": "^1.0.3",
+    "@nuxt/test-utils": "^4.2.0",
     "@nuxtjs/eslint-config-typescript": "^12.1.0",
-    "@vitest/ui": "^4.1.10",
+    "@vitest/ui": "^4.1.11",
     "ajv": "^8.20.0",
     "changelogen": "^0.6.2",
-    "eslint": "^10.7.0",
+    "eslint": "^10.10.0",
     "json-schema-to-zod": "^2.8.1",
     "nuxt": "^4.4.8",
     "release-it": "^20.2.1",
-    "vitest": "^4.1.10",
-    "vue": "^3.5.39"
+    "vitest": "^4.1.11",
+    "vue": "^3.5.42"
   },
   "build": {
     "entries": [
@@ -113,7 +113,7 @@
       "jsonc-parser"
     ]
   },
-  "packageManager": "pnpm@11.11.0",
+  "packageManager": "pnpm@11.25.0",
   "release-it": {
     "git": {
       "commitMessage": "chore(release): release v${version}"

@@ -113,7 +113,7 @@
       "jsonc-parser"
     ]
   },
-  "packageManager": "pnpm@11.11.0",
+  "packageManager": "pnpm@12.4.1",
   "release-it": {
     "git": {
       "commitMessage": "chore(release): release v${version}"

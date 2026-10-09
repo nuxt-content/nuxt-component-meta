@@ -26,7 +26,9 @@ export const metaPlugin = createUnplugin<ComponentMetaUnpluginOptions>(({ parser
       },
       async buildStart () {
         // avoid parsing meta twice in SSR
-        if (_configResolved?.build.ssr) {
+        // with the Vite Environment API both builds share one config with `build.ssr` set, only the environment tells them apart
+        const environment = (this as any).environment?.name as string | undefined
+        if (environment ? environment !== 'client' : _configResolved?.build.ssr) {
           return
         }
 

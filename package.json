@@ -55,7 +55,7 @@
     "magic-string": "^0.30.21",
     "mlly": "^1.8.2",
     "ohash": "^2.0.12",
-    "oxc-parser": "^0.139.0",
+    "oxc-parser": "^0.154.0",
     "oxc-walker": "^1.1.1",
     "pathe": "^2.0.3",
     "scule": "^1.3.0",
@@ -71,14 +71,14 @@
     "@nuxt/module-builder": "^1.0.3",
     "@nuxt/test-utils": "^4.3.3",
     "@nuxtjs/eslint-config-typescript": "^12.1.0",
-    "@vitest/ui": "^4.1.10",
+    "@vitest/ui": "^4.1.11",
     "ajv": "^8.20.0",
     "changelogen": "^0.6.2",
     "eslint": "^10.12.0",
     "json-schema-to-zod": "^2.8.1",
     "nuxt": "^4.6.1",
     "release-it": "^20.2.1",
-    "vitest": "^4.1.10",
+    "vitest": "^4.1.11",
     "vue": "^3.5.44"
   },
   "build": {
@@ -113,7 +113,7 @@
       "jsonc-parser"
     ]
   },
-  "packageManager": "pnpm@11.11.0",
+  "packageManager": "pnpm@11.28.5",
   "release-it": {
     "git": {
       "commitMessage": "chore(release): release v${version}"

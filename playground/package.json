@@ -2,8 +2,8 @@
   "private": true,
   "name": "nuxt-component-meta-playground",
   "devDependencies": {
-    "@nuxt/content": "^3.15.0",
-    "nuxt": "^4.4.8",
+    "@nuxt/content": "^3.16.2",
+    "nuxt": "^4.6.1",
     "nuxt-component-meta": "link:.."
   },
   "scripts": {
@@ -14,8 +14,8 @@
   },
   "dependencies": {
     "@amoayun/monaco-editor-vue3": "^1.0.20",
-    "@nuxt/ui": "^4.9.0",
+    "@nuxt/ui": "^4.11.3",
     "monaco-editor": "^0.55.1",
-    "prettier": "^3.9.5"
+    "prettier": "^3.9.10"
   }
 }

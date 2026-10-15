@@ -49,6 +49,7 @@
   },
   "dependencies": {
     "@nuxt/kit": "^4.6.1",
+    "@nuxt/schema": "^4.6.1",
     "citty": "^0.2.2",
     "defu": "^6.1.7",
     "jiti": "^2.7.0",
@@ -97,20 +98,7 @@
       }
     ],
     "externals": [
-      "#nuxt-component-meta",
-      "ufo",
-      "pathe",
-      "defu",
-      "unplugin",
-      "consola",
-      "acorn",
-      "jiti",
-      "magic-string",
-      "mlly",
-      "oxc-parser",
-      "oxc-walker",
-      "pkg-types",
-      "jsonc-parser"
+      "#nuxt-component-meta"
     ]
   },
   "packageManager": "pnpm@12.11.2",

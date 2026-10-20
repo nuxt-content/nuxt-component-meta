@@ -3,7 +3,7 @@
   "name": "nuxt-component-meta-playground",
   "devDependencies": {
     "@nuxt/content": "^3.16.2",
-    "nuxt": "^4.6.1",
+    "nuxt": "^4.6.2",
     "nuxt-component-meta": "link:.."
   },
   "scripts": {

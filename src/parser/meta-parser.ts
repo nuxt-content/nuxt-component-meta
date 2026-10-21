@@ -210,13 +210,11 @@ export function useComponentMetaParser (
 
       const meta = checker.getComponentMeta(resolvedPath)
 
-      Object.assign(
-        component.meta,
-        refineMeta(meta, metaFields, overrides[component.pascalName] || {}),
-        {
-          hash: codeHash
-        }
-      )
+      // Start from a fresh meta: the previous one still holds the output of macros the code may no longer call
+      component.meta = {
+        ...refineMeta(meta, metaFields, overrides[component.pascalName] || {}),
+        hash: codeHash
+      }
 
       const macroResults = extractMacroMeta(code, extendMetaFunctions, resolvedPath)
       for (const result of macroResults) {

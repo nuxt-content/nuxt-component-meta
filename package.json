@@ -55,30 +55,30 @@
     "magic-string": "^0.30.21",
     "mlly": "^1.8.2",
     "ohash": "^2.0.12",
-    "oxc-parser": "^0.154.0",
+    "oxc-parser": "^0.156.0",
     "oxc-walker": "^1.1.1",
     "pathe": "^2.0.3",
     "scule": "^1.3.0",
-    "unplugin": "^3.4.0",
+    "unplugin": "^3.7.0",
     "typescript": "^5.9.3",
     "ufo": "^1.6.4",
-    "vue-component-meta": "^3.3.13"
+    "vue-component-meta": "^3.3.14"
   },
   "devDependencies": {
-    "@iconify/vue": "^5.0.3",
+    "@iconify/vue": "^5.0.4",
     "@nuxt/content": "^3.16.2",
     "@nuxt/eslint-config": "^1.17.0",
     "@nuxt/module-builder": "^1.0.3",
-    "@nuxt/test-utils": "^4.3.3",
+    "@nuxt/test-utils": "^4.3.4",
     "@nuxtjs/eslint-config-typescript": "^12.1.0",
-    "@vitest/ui": "^4.1.11",
+    "@vitest/ui": "^4.1.12",
     "ajv": "^8.20.0",
     "changelogen": "^0.6.2",
-    "eslint": "^10.12.0",
+    "eslint": "^10.13.0",
     "json-schema-to-zod": "^2.8.1",
     "nuxt": "^4.6.1",
     "release-it": "^21.1.1",
-    "vitest": "^4.1.11",
+    "vitest": "^4.1.12",
     "vue": "^3.5.44"
   },
   "build": {
@@ -113,7 +113,7 @@
       "jsonc-parser"
     ]
   },
-  "packageManager": "pnpm@12.11.2",
+  "packageManager": "pnpm@12.16.1",
   "release-it": {
     "git": {
       "commitMessage": "chore(release): release v${version}"
